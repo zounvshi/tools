@@ -122,7 +122,7 @@
             <div>
                 <div class="flex items-center gap-2.5 mb-3">
                     <span class="bg-gradient-to-r from-sky-500 to-blue-600 text-slate-950 text-[10px] font-black tracking-wider px-2.5 py-0.5 rounded-md shadow-lg shadow-sky-500/20">TOOL KIT</span>
-                    <span ondblclick="triggerAdminLogin()" class="text-slate-600 text-xs font-mono tracking-wider cursor-default select-none hover:text-sky-400/70 transition-colors">高效数字工作流平台（双击验证内网密匙）</span>
+                    <span ondblclick="triggerAdminLogin()" class="text-slate-600 text-xs font-mono tracking-wider cursor-default select-none hover:text-sky-400/70 transition-colors">高效数字工作流平台</span>
                 </div>
                 <h1 class="text-4xl md:text-5xl font-black tracking-tight bg-gradient-to-r from-white via-slate-200 to-slate-400 bg-clip-text text-transparent mb-4">
                     办公提效工具集成
@@ -261,7 +261,7 @@
                     <input type="text" id="toolTags" placeholder="效率, 数字化" class="w-full bg-slate-950 border border-purple-950 text-slate-200 rounded-lg p-2.5 text-sm focus:outline-none focus:border-purple-500">
                 </div>
                 <div class="pt-2 flex flex-wrap justify-end gap-2 border-t border-purple-950/60 pt-4">
-                    <button type="button" onclick="logoutAdmin()" class="bg-rose-950/40 text-rose-400 hover:bg-rose-900 border border-rose-950 text-xs px-2.5 py-2 rounded-lg font-semibold mr-auto">注销</button>
+                    <button type="button" onclick="logoutAdmin()" class="bg-rose-950/40 text-rose-400 hover:bg-rose-900 border border-rose-950 text-xs px-2.5 py-2 rounded-lg font-semibold mr-auto">管理员账号退出</button>
                     <button type="button" onclick="exportNewJson()" class="bg-emerald-950/40 text-emerald-400 hover:bg-emerald-900 border border-emerald-950 text-xs px-3 py-2 rounded-lg font-bold shadow-md">📦 导出新配置</button>
                     <button type="button" onclick="resetFormToDefault()" class="bg-slate-900 hover:bg-slate-800 text-slate-400 text-xs px-3 py-2 rounded-lg font-semibold">重置初版</button>
                     <button type="submit" class="bg-gradient-to-r from-purple-600 to-indigo-600 text-white text-xs px-4 py-2 rounded-lg font-bold shadow-md active:scale-95 transition-all">上架工具</button>
@@ -271,7 +271,7 @@
     </div>
 
     <script>
-        const ADMIN_PASSWORD = "Lyt12345！";
+        const ADMIN_PASSWORD = "Lyt12345";
         let isAdmin = false; 
 
         // 本地降级容灾兜底数据
