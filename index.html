@@ -6,13 +6,11 @@
     <title>办公提效工具集成平台</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        /* 优化滚动条 */
         ::-webkit-scrollbar { width: 6px; height: 6px; }
         ::-webkit-scrollbar-track { background: #070a13; }
         ::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 99px; }
         ::-webkit-scrollbar-thumb:hover { background: #38bdf8; }
         
-        /* 数码像素网格背景特效 */
         .digital-grid {
             background-image: 
                 linear-gradient(rgba(56, 189, 248, 0.03) 1px, transparent 1px),
@@ -21,7 +19,6 @@
             background-position: center;
         }
 
-        /* 流光跑马灯卡片 */
         .modern-card {
             position: relative;
             background: rgba(11, 19, 43, 0.75);
@@ -32,7 +29,6 @@
             transition: all 0.4s cubic-bezier(0.25, 1, 0.5, 1);
         }
         
-        /* 流光核心层 */
         .modern-card::after {
             content: '';
             position: absolute;
@@ -51,11 +47,8 @@
             box-shadow: 0 20px 40px -15px rgba(56, 189, 248, 0.3);
         }
 
-        .modern-card:hover::after {
-            opacity: 1;
-        }
+        .modern-card:hover::after { opacity: 1; }
 
-        /* 确保内部容器遮罩流光中心 */
         .card-inner {
             background: rgba(9, 15, 35, 0.93);
             border-radius: 0.95rem;
@@ -68,7 +61,7 @@
             100% { transform: rotate(360deg); }
         }
         
-        #modal-overlay, #admin-overlay {
+        #modal-overlay, #admin-overlay, #guide-overlay {
             backdrop-filter: blur(20px);
             transition: opacity 0.3s ease;
         }
@@ -84,7 +77,6 @@
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 
-        /* 科技风电子发光标签样式 */
         .cyber-tag-blue {
             color: #38bdf8;
             background: rgba(14, 165, 233, 0.1);
@@ -100,13 +92,65 @@
             box-shadow: inset 0 0 8px rgba(192, 132, 252, 0.2);
         }
 
-        /* 仪表盘呼吸灯 */
         @keyframes pulseGlow {
             0%, 100% { opacity: 0.3; }
             50% { opacity: 0.8; }
         }
-        .radar-pulse {
-            animation: pulseGlow 2s infinite;
+        .radar-pulse { animation: pulseGlow 2s infinite; }
+
+        .guide-content img {
+            max-width: 100%;
+            border-radius: 0.75rem;
+            margin: 1rem 0;
+            border: 1px solid rgba(56,189,248,0.3);
+        }
+        .guide-content h1, .guide-content h2, .guide-content h3 {
+            color: #38bdf8;
+            font-weight: bold;
+            margin: 1rem 0 0.5rem 0;
+        }
+        .guide-content p {
+            margin-bottom: 0.75rem;
+            line-height: 1.7;
+        }
+        .guide-content ul, .guide-content ol {
+            margin-left: 1.5rem;
+            margin-bottom: 0.75rem;
+        }
+        .guide-content li {
+            margin-bottom: 0.25rem;
+        }
+        .guide-content strong {
+            color: #e2e8f0;
+        }
+        .guide-content a {
+            color: #38bdf8;
+            text-decoration: underline;
+        }
+
+        /* 🆕 图片上传区域样式 */
+        .upload-dropzone {
+            border: 2px dashed rgba(56, 189, 248, 0.3);
+            border-radius: 0.75rem;
+            padding: 1rem;
+            text-align: center;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        .upload-dropzone:hover {
+            border-color: rgba(56, 189, 248, 0.6);
+            background: rgba(56, 189, 248, 0.05);
+        }
+        .upload-dropzone.drag-over {
+            border-color: #38bdf8;
+            background: rgba(56, 189, 248, 0.1);
+        }
+        .image-preview-thumb {
+            width: 60px;
+            height: 60px;
+            object-fit: cover;
+            border-radius: 0.5rem;
+            border: 2px solid rgba(56,189,248,0.4);
         }
     </style>
 </head>
@@ -132,7 +176,6 @@
                 </p>
             </div>
             
-            <!-- 仪表盘概念统计面板 -->
             <div class="grid grid-cols-3 gap-4 w-full md:w-auto md:min-w-[420px]">
                 <div class="bg-slate-950/80 border border-sky-950/50 rounded-xl p-4 text-center backdrop-blur-sm relative overflow-hidden group">
                     <div class="absolute top-0 left-0 w-full h-[2px] bg-sky-500/30"></div>
@@ -156,7 +199,6 @@
     <!-- 粘性吸顶工具栏 -->
     <div class="sticky top-0 z-40 bg-[#02050e]/80 backdrop-blur-md border-b border-sky-950/30 shadow-2xl shadow-slate-950/50 transition-all duration-300">
         <div class="max-w-7xl mx-auto px-6 py-4 flex flex-col md:flex-row items-center justify-between gap-4">
-            <!-- 搜索区 -->
             <div class="relative w-full md:max-w-md shrink-0">
                 <span class="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none text-sky-400/60 group-focus-within:text-sky-400 transition-colors">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
@@ -168,7 +210,6 @@
                               focus:outline-none focus:border-sky-400 focus:ring-1 focus:ring-sky-400/40 focus:shadow-[inset_0_0_16px_rgba(56,189,248,0.15),0_0_20px_rgba(56,189,248,0.2)]">
             </div>
             
-            <!-- 环境筛选与功能聚合 -->
             <div class="flex items-center justify-between md:justify-end gap-3 w-full md:w-auto overflow-x-auto no-scrollbar">
                 <div class="flex items-center gap-1.5 bg-slate-950/60 p-1 rounded-xl border border-sky-950/40 shrink-0">
                     <button class="filter-btn shrink-0 bg-sky-500 text-slate-950 px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all shadow-md shadow-sky-500/20" data-type="all">全部工具</button>
@@ -227,6 +268,67 @@
         </div>
     </div>
 
+    <!-- 🆕 使用说明弹窗（带图片上传功能） -->
+    <div id="guide-overlay" class="fixed inset-0 bg-slate-950/95 z-[60] hidden flex items-center justify-center p-4 transition-all">
+        <div class="bg-[#0b132b] border border-sky-500/40 rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] flex flex-col overflow-hidden modal-anime">
+            <!-- 标题栏 -->
+            <div class="flex justify-between items-center px-5 py-4 border-b border-sky-950/60 bg-slate-950/50">
+                <div class="flex items-center gap-2">
+                    <span class="text-xl">📖</span>
+                    <h3 class="text-base font-bold text-white font-mono" id="guide-title">使用说明书</h3>
+                </div>
+                <button onclick="closeGuideModal()" class="text-slate-400 hover:text-white bg-slate-900 hover:bg-slate-800 rounded-lg p-1.5 transition-all">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                </button>
+            </div>
+            
+            <!-- 内容区 -->
+            <div id="guide-content-area" class="flex-1 overflow-y-auto p-6 text-slate-200 text-sm leading-relaxed guide-content space-y-3">
+                <p class="text-slate-500 italic">暂无使用说明</p>
+            </div>
+            
+            <!-- 🆕 管理员编辑区（含图片上传） -->
+            <div id="adminGuideEditor" class="hidden border-t border-purple-500/30 bg-slate-950/90 p-5 space-y-3">
+                <div class="flex items-center gap-2 text-purple-300 text-xs font-mono">
+                    <span class="w-2 h-2 bg-purple-500 rounded-full radar-pulse"></span> 
+                    管理员编辑模式 · 支持HTML图文 · 可上传本地图片
+                </div>
+                
+                <!-- 🆕 图片上传区域 -->
+                <div id="imageUploadZone" class="upload-dropzone" onclick="document.getElementById('imageFileInput').click()">
+                    <div class="flex flex-col items-center gap-1">
+                        <svg class="w-6 h-6 text-sky-400/60" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                        </svg>
+                        <span class="text-xs text-slate-400">📁 点击上传图片 或 拖拽图片到此处</span>
+                        <span class="text-[10px] text-slate-600">支持 JPG/PNG/GIF/WebP，自动转为Base64嵌入</span>
+                    </div>
+                    <input type="file" id="imageFileInput" accept="image/*" class="hidden" onchange="handleImageUpload(event)">
+                </div>
+                
+                <!-- 🆕 已上传图片预览 -->
+                <div id="uploadedImagesPreview" class="flex flex-wrap gap-2 hidden">
+                    <span class="text-[10px] text-slate-500 w-full">已上传图片（点击插入到编辑器）：</span>
+                </div>
+                
+                <!-- 编辑器 -->
+                <textarea id="guideEditorTextarea" rows="6" 
+                    class="w-full bg-slate-900 border border-purple-800 text-slate-200 rounded-lg p-3 text-sm font-mono focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500/50" 
+                    placeholder="支持HTML：&lt;p&gt;说明文字&lt;/p&gt;&lt;img src='https://...' alt='截图'&gt;&lt;h3&gt;步骤&lt;/h3&gt;&lt;ol&gt;&lt;li&gt;第一步&lt;/li&gt;&lt;/ol&gt;"></textarea>
+                
+                <div class="flex justify-between items-center">
+                    <p class="text-slate-600 text-[10px]">💡 可使用 &lt;h3&gt;、&lt;p&gt;、&lt;img&gt;、&lt;ul&gt; 等标签</p>
+                    <div class="flex gap-2">
+                        <button onclick="previewGuide()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs px-3 py-2 rounded-lg font-semibold transition-all border border-slate-700">👁️ 预览</button>
+                        <button onclick="saveGuideForCurrentTool()" class="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white text-xs px-4 py-2 rounded-lg font-bold shadow-lg transition-all">
+                            💾 保存说明
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- 管理员控制面板 -->
     <div id="admin-overlay" class="fixed inset-0 bg-slate-950/90 z-50 hidden flex items-center justify-center p-4">
         <div class="bg-[#0b132b] border border-purple-500/30 rounded-2xl shadow-2xl w-full max-w-lg p-6 modal-anime">
@@ -272,12 +374,31 @@
 
     <script>
         const ADMIN_PASSWORD = "Lyt12345";
-        let isAdmin = false; 
+        let isAdmin = false;
+        let currentGuideToolId = null;
+        let uploadedImages = []; // 🆕 存储已上传的图片Base64
 
-        // 本地降级容灾兜底数据
         const defaultTools = [
-            { id: 1, name: "MouseFX", desc: "一款轻量酷炫的鼠标特效增强工具，为您在录屏、演示及日常办公时提供极佳的指针视觉反馈。", type: "exe", favorite: false, tags: ["桌面美化", "演示提效"], url: "#" },
-            { id: 2, name: "医药法规数字化协同平台", desc: "专为医药行业打造的数字化合规与政策标准协同查询系统，支持云端高效在线查阅与多方联控。", type: "html", favorite: false, tags: ["行业协同", "合规数字化"], url: "https://zounvshi.github.io/zhiliang" }
+            { 
+                id: 1, 
+                name: "MouseFX", 
+                desc: "一款轻量酷炫的鼠标特效增强工具，为您在录屏、演示及日常办公时提供极佳的指针视觉反馈。", 
+                type: "exe", 
+                favorite: false, 
+                tags: ["桌面美化", "演示提效"], 
+                url: "#",
+                guide: "<h3>🖱️ MouseFX 使用说明</h3><p>安装后右键托盘图标选择<strong>特效方案</strong>，推荐使用「粒子光晕」模式。</p><img src='https://placehold.co/600x300/0b132b/38bdf8?text=MouseFX+效果预览' alt='MouseFX界面'/><p>可在设置中调整<strong>透明度</strong>与<strong>跟随速度</strong>。</p>"
+            },
+            { 
+                id: 2, 
+                name: "医药法规数字化协同平台", 
+                desc: "专为医药行业打造的数字化合规与政策标准协同查询系统，支持云端高效在线查阅与多方联控。", 
+                type: "html", 
+                favorite: false, 
+                tags: ["行业协同", "合规数字化"], 
+                url: "https://zounvshi.github.io/zhiliang",
+                guide: "<h3>📋 平台使用指南</h3><p>登录后进入<strong>合规库</strong>，支持关键词检索及版本对比。</p><img src='https://placehold.co/600x300/0b132b/c084fc?text=法规平台仪表盘' alt='平台截图'/><ol><li>输入药品名称或法规编号</li><li>点击「对比」查看历史版本差异</li><li>可导出PDF报告</li></ol>"
+            }
         ];
 
         let toolsData = [];
@@ -289,7 +410,7 @@
         const favToggle = document.getElementById('favToggle');
         const favToggleText = document.getElementById('favToggleText');
         const favToggleIcon = document.getElementById('favToggleIcon');
-        let isFavViewActive = false; 
+        let isFavViewActive = false;
 
         const modal = document.getElementById('modal-overlay');
         const modalContainer = document.getElementById('modalContainer');
@@ -298,6 +419,33 @@
         const closeModalBtn = document.getElementById('close-modal');
         const externalLink = document.getElementById('external-link');
         let isModalMaximized = false;
+
+        const guideOverlay = document.getElementById('guide-overlay');
+        const guideTitle = document.getElementById('guide-title');
+        const guideContentArea = document.getElementById('guide-content-area');
+        const adminGuideEditor = document.getElementById('adminGuideEditor');
+        const guideEditorTextarea = document.getElementById('guideEditorTextarea');
+        const imageUploadZone = document.getElementById('imageUploadZone');
+        const uploadedImagesPreview = document.getElementById('uploadedImagesPreview');
+
+        // 🆕 拖拽上传支持
+        if (imageUploadZone) {
+            imageUploadZone.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                imageUploadZone.classList.add('drag-over');
+            });
+            imageUploadZone.addEventListener('dragleave', () => {
+                imageUploadZone.classList.remove('drag-over');
+            });
+            imageUploadZone.addEventListener('drop', (e) => {
+                e.preventDefault();
+                imageUploadZone.classList.remove('drag-over');
+                const files = e.dataTransfer.files;
+                if (files.length > 0) {
+                    processImageFile(files[0]);
+                }
+            });
+        }
 
         function checkAdminSession() {
             if (sessionStorage.getItem('isAdminActive') === 'true') {
@@ -313,7 +461,7 @@
                 sessionStorage.setItem('isAdminActive', 'true');
                 document.getElementById('adminPanelBtn').classList.remove('hidden');
                 alert("内网凭证已激活！");
-                renderTools(getActiveFilterType(), searchInput.value); 
+                renderTools(getActiveFilterType(), searchInput.value);
             } else if (pass !== null) {
                 alert("校验失败，终端已锁定保护！");
             }
@@ -324,22 +472,24 @@
             sessionStorage.removeItem('isAdminActive');
             document.getElementById('adminPanelBtn').classList.add('hidden');
             toggleAdminPanel(false);
+            closeGuideModal();
             alert("内网凭证已安全注销。");
             renderTools(getActiveFilterType(), searchInput.value);
         }
 
-        // 🌟 【同步核心升级】：异步读取线上同级目录下的 tools.json
         async function initData() {
             checkAdminSession();
             try {
                 const response = await fetch('./tools.json');
                 if (!response.ok) throw new Error('网络元件文件读取失败');
                 toolsData = await response.json();
+                toolsData.forEach(tool => { if (!tool.guide) tool.guide = ''; });
             } catch (error) {
                 console.warn("未检索到线上 tools.json，正启用本地存储或默认拓扑:", error);
                 const localData = localStorage.getItem('customToolsData');
                 if (localData) {
                     toolsData = JSON.parse(localData);
+                    toolsData.forEach(tool => { if (!tool.guide) tool.guide = ''; });
                 } else {
                     toolsData = [...defaultTools];
                     localStorage.setItem('customToolsData', JSON.stringify(toolsData));
@@ -353,9 +503,7 @@
             const stored = localStorage.getItem('favTools');
             if (stored) {
                 const favIds = JSON.parse(stored);
-                toolsData.forEach(item => {
-                    item.favorite = favIds.includes(item.id);
-                });
+                toolsData.forEach(item => { item.favorite = favIds.includes(item.id); });
             }
         }
 
@@ -376,7 +524,7 @@
             const type = document.getElementById('toolType').value;
             const label = document.getElementById('urlLabel');
             const input = document.getElementById('toolUrl');
-            if(type === 'code') {
+            if (type === 'code') {
                 label.innerText = "直接粘贴完整 HTML 源码块 *";
                 input.placeholder = "例：<div class='p-4'><h3>自定义</h3></div>...";
             } else if (type === 'exe') {
@@ -390,30 +538,38 @@
 
         function handleUpload(e) {
             e.preventDefault();
-            if(!isAdmin) return;
+            if (!isAdmin) return;
             const type = document.getElementById('toolType').value;
             const name = document.getElementById('toolName').value;
             const desc = document.getElementById('toolDesc').value;
             let url = document.getElementById('toolUrl').value;
             const tagsInput = document.getElementById('toolTags').value;
             const tags = tagsInput ? tagsInput.split(/[,，]/).map(t => t.trim()) : ["CUSTOM"];
-            
-            if(type === 'code') {
+
+            if (type === 'code') {
                 const blob = new Blob([url], { type: 'text/html' });
                 url = URL.createObjectURL(blob);
             }
 
-            const newTool = { id: Date.now(), name, desc, type: type === 'code' ? 'html' : type, favorite: false, tags, url: url || "#" };
+            const newTool = {
+                id: Date.now(),
+                name,
+                desc,
+                type: type === 'code' ? 'html' : type,
+                favorite: false,
+                tags,
+                url: url || "#",
+                guide: ''
+            };
             toolsData.push(newTool);
             syncToLocalStorage();
-            alert("上架成功！由于网页在静态托管平台运行，如需同步给所有人，请务必点击面板中的【📦 导出新配置】并覆盖 GitHub 的 tools.json。");
+            alert("上架成功！如需同步给所有人，请点击【📦 导出新配置】并覆盖 GitHub 的 tools.json。");
             document.getElementById('toolForm').reset();
             renderTools(getActiveFilterType(), searchInput.value);
         }
 
-        // 🌟 【新增导出】：将当前内存中最新添加的数据，导出为纯净的 JSON 供更新使用
         function exportNewJson() {
-            const cleanData = toolsData.map(({favorite, ...rest}) => ({...rest, favorite: false}));
+            const cleanData = toolsData.map(({ favorite, ...rest }) => ({ ...rest, favorite: false }));
             const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(cleanData, null, 2));
             const downloadAnchor = document.createElement('a');
             downloadAnchor.setAttribute("href", dataStr);
@@ -421,11 +577,12 @@
             document.body.appendChild(downloadAnchor);
             downloadAnchor.click();
             downloadAnchor.remove();
+            alert("✅ 已导出 tools.json，请替换GitHub仓库中的文件以同步更新。");
         }
 
         function deleteTool(id) {
-            if(!isAdmin) return;
-            if(confirm("执行下架并彻底擦除该元件？")) {
+            if (!isAdmin) return;
+            if (confirm("执行下架并彻底擦除该元件？")) {
                 toolsData = toolsData.filter(t => t.id !== id);
                 syncToLocalStorage();
                 saveFavorites();
@@ -434,17 +591,141 @@
         }
 
         function resetFormToDefault() {
-            if(confirm("重置整个阵列恢复至出厂拓扑？")) {
+            if (confirm("重置整个阵列恢复至出厂拓扑？这将清除所有自定义数据。")) {
                 localStorage.removeItem('customToolsData');
-                initData();
+                toolsData = [...defaultTools];
+                syncToLocalStorage();
                 toggleAdminPanel(false);
                 renderTools('all', '');
+                alert("已恢复默认工具集。");
+            }
+        }
+
+        // 🆕 处理图片文件上传
+        function processImageFile(file) {
+            if (!file.type.match('image.*')) {
+                alert('请选择图片文件（JPG/PNG/GIF/WebP）');
+                return;
+            }
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const base64 = e.target.result;
+                uploadedImages.push({
+                    name: file.name,
+                    base64: base64
+                });
+                renderUploadedImages();
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function handleImageUpload(event) {
+            const file = event.target.files[0];
+            if (file) {
+                processImageFile(file);
+            }
+            // 清空input以便重复上传同一文件
+            event.target.value = '';
+        }
+
+        // 🆕 渲染已上传的图片预览
+        function renderUploadedImages() {
+            if (uploadedImages.length === 0) {
+                uploadedImagesPreview.classList.add('hidden');
+                return;
+            }
+            
+            uploadedImagesPreview.classList.remove('hidden');
+            // 保留提示文字，清空后面的图片预览
+            const images = uploadedImagesPreview.querySelectorAll('.image-preview-item');
+            images.forEach(el => el.remove());
+            
+            uploadedImages.forEach((img, index) => {
+                const div = document.createElement('div');
+                div.className = 'image-preview-item relative group cursor-pointer';
+                div.innerHTML = `
+                    <img src="${img.base64}" alt="${img.name}" class="image-preview-thumb" title="点击插入到编辑器">
+                    <button onclick="removeUploadedImage(${index})" class="absolute -top-1 -right-1 bg-rose-600 text-white rounded-full w-4 h-4 flex items-center justify-center text-[10px] opacity-0 group-hover:opacity-100 transition-opacity">×</button>
+                `;
+                div.onclick = function(e) {
+                    if (e.target.tagName === 'BUTTON') return;
+                    insertImageToEditor(img.base64, img.name);
+                };
+                uploadedImagesPreview.appendChild(div);
+            });
+        }
+
+        // 🆕 插入图片到编辑器
+        function insertImageToEditor(base64, name) {
+            const imgTag = `<img src="${base64}" alt="${name}" />`;
+            const textarea = guideEditorTextarea;
+            const start = textarea.selectionStart;
+            const end = textarea.selectionEnd;
+            const text = textarea.value;
+            textarea.value = text.substring(0, start) + imgTag + text.substring(end);
+            textarea.focus();
+            textarea.setSelectionRange(start + imgTag.length, start + imgTag.length);
+        }
+
+        // 🆕 移除已上传图片
+        function removeUploadedImage(index) {
+            uploadedImages.splice(index, 1);
+            renderUploadedImages();
+        }
+
+        function openGuideModal(toolId) {
+            const tool = toolsData.find(t => t.id === toolId);
+            if (!tool) return;
+            currentGuideToolId = toolId;
+            guideTitle.innerText = `📖 ${tool.name} · 使用说明`;
+            guideContentArea.innerHTML = tool.guide && tool.guide.trim() !== ''
+                ? tool.guide
+                : '<div class="text-center py-12 text-slate-500"><p class="text-lg mb-2">📭</p><p class="italic">暂无详细说明</p><p class="text-xs mt-2 text-slate-600">待编辑</p></div>';
+
+            // 清空上传图片缓存
+            uploadedImages = [];
+            renderUploadedImages();
+
+            if (isAdmin) {
+                adminGuideEditor.classList.remove('hidden');
+                guideEditorTextarea.value = tool.guide || '';
+            } else {
+                adminGuideEditor.classList.add('hidden');
+            }
+
+            guideOverlay.classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeGuideModal() {
+            guideOverlay.classList.add('hidden');
+            document.body.style.overflow = 'auto';
+            currentGuideToolId = null;
+            uploadedImages = [];
+            renderUploadedImages();
+        }
+
+        function previewGuide() {
+            if (currentGuideToolId) {
+                guideContentArea.innerHTML = guideEditorTextarea.value || '<p class="text-slate-500 italic">预览为空</p>';
+            }
+        }
+
+        function saveGuideForCurrentTool() {
+            if (!isAdmin || !currentGuideToolId) return;
+            const tool = toolsData.find(t => t.id === currentGuideToolId);
+            if (tool) {
+                tool.guide = guideEditorTextarea.value;
+                syncToLocalStorage();
+                guideContentArea.innerHTML = tool.guide || '<p class="text-slate-500 italic">暂无详细说明。</p>';
+                alert("✅ 使用说明已保存成功！");
             }
         }
 
         function openModal(name, url) {
             modalTitle.innerText = `[CONNECTED] // ${name.toUpperCase()}`;
-            previewIframe.src = url; 
+            previewIframe.src = url;
             externalLink.href = url;
             modal.classList.remove('hidden');
             document.body.style.overflow = 'hidden';
@@ -454,14 +735,16 @@
             const zIcon = document.getElementById('zoom-icon');
             const zText = document.getElementById('zoom-text');
             isModalMaximized = !isModalMaximized;
-            if(isModalMaximized) {
+            if (isModalMaximized) {
                 modalContainer.classList.remove('max-w-6xl', 'h-[85vh]');
                 modalContainer.classList.add('max-w-full', 'h-screen', 'rounded-none');
-                zIcon.innerText = "💠"; zText.innerText = "视窗复原";
+                zIcon.innerText = "💠";
+                zText.innerText = "视窗复原";
             } else {
                 modalContainer.classList.remove('max-w-full', 'h-screen', 'rounded-none');
                 modalContainer.classList.add('max-w-6xl', 'h-[85vh]');
-                zIcon.innerText = "🔳"; zText.innerText = "全屏";
+                zIcon.innerText = "🔳";
+                zText.innerText = "全屏";
             }
         }
 
@@ -469,8 +752,8 @@
             modal.classList.add('hidden');
             previewIframe.src = '';
             document.body.style.overflow = 'auto';
-            if(isModalMaximized) toggleModalSize();
-        }
+            if (isModalMaximized) toggleModalSize();
+        };
 
         function toggleFavorite(id) {
             const item = toolsData.find(t => t.id === id);
@@ -478,18 +761,11 @@
             item.favorite = !item.favorite;
             saveFavorites();
             favCount.innerText = toolsData.filter(i => i.favorite).length;
-            const btn = document.querySelector(`.favorite-btn[data-id="${id}"]`);
-            if (btn) {
-                const svg = btn.querySelector('svg');
-                if (item.favorite) {
-                    svg.classList.remove('text-slate-500', 'hover:text-rose-400');
-                    svg.classList.add('text-rose-500', 'fill-rose-500', 'scale-110');
-                } else {
-                    svg.classList.remove('text-rose-500', 'fill-rose-500', 'scale-110');
-                    svg.classList.add('text-slate-500', 'hover:text-rose-400');
-                }
+            if (isFavViewActive && !item.favorite) {
+                renderTools('favorite', searchInput.value);
+            } else {
+                renderTools(getActiveFilterType(), searchInput.value);
             }
-            if (isFavViewActive && !item.favorite) renderTools(getActiveFilterType(), searchInput.value);
         }
 
         function getActiveFilterType() {
@@ -506,7 +782,12 @@
                 filteredData = filteredData.filter(item => item.type === filterType);
             }
             if (keyword.trim() !== '') {
-                filteredData = filteredData.filter(item => item.name.toLowerCase().includes(keyword.toLowerCase()) || item.desc.toLowerCase().includes(keyword.toLowerCase()));
+                const kw = keyword.toLowerCase();
+                filteredData = filteredData.filter(item =>
+                    item.name.toLowerCase().includes(kw) ||
+                    item.desc.toLowerCase().includes(kw) ||
+                    item.tags.some(tag => tag.toLowerCase().includes(kw))
+                );
             }
 
             favCount.innerText = toolsData.filter(item => item.favorite).length;
@@ -538,13 +819,21 @@
                         </div>
                         
                         <div class="flex items-center justify-between pt-4 border-t border-sky-950/40">
-                            <div class="flex items-center gap-3">
+                            <div class="flex items-center gap-2">
                                 <button onclick="toggleFavorite(${item.id})" class="favorite-btn p-1.5 bg-slate-950/80 hover:bg-slate-900 rounded-lg border border-sky-950/40 transition-all focus:outline-none" data-id="${item.id}">
                                     <svg class="w-4 h-4 transition-all duration-200 ${item.favorite ? 'text-rose-500 fill-rose-500 scale-110' : 'text-slate-500 hover:text-rose-400'}" viewBox="0 0 24 24" fill="${item.favorite ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2.5">
                                         <path stroke-linecap="round" stroke-linejoin="round" d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
                                     </svg>
                                 </button>
                                 <span class="px-2 py-0.5 text-[9px] font-black font-mono rounded ${item.type === 'exe' ? 'bg-sky-500/10 text-sky-400 border border-sky-500/20 shadow-[0_0_10px_rgba(56,189,248,0.1)]' : 'bg-purple-500/10 text-purple-400 border border-purple-500/20 shadow-[0_0_10px_rgba(168,85,247,0.1)]'}">${item.type === 'exe' ? 'EXE' : 'WEB'}</span>
+                                
+                                <button onclick="openGuideModal(${item.id})" 
+                                    class="p-1.5 bg-slate-950/80 hover:bg-sky-950/60 rounded-lg border border-sky-950/40 transition-all group/guide"
+                                    title="查看使用说明">
+                                    <svg class="w-4 h-4 text-slate-500 group-hover/guide:text-sky-400 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                    </svg>
+                                </button>
                             </div>
                             
                             <div>
@@ -560,7 +849,8 @@
             `).join('');
         }
 
-        favToggle.addEventListener('click', function() {
+        // 事件监听
+        favToggle.addEventListener('click', function () {
             isFavViewActive = !isFavViewActive;
             if (isFavViewActive) {
                 favToggleText.innerText = '返回全部';
@@ -576,7 +866,7 @@
         });
 
         filterBtns.forEach(btn => {
-            btn.addEventListener('click', function() {
+            btn.addEventListener('click', function () {
                 isFavViewActive = false;
                 favToggleText.innerText = '查看收藏';
                 favToggleIcon.classList.remove('text-rose-500', 'fill-rose-500/20', 'rotate-180');
@@ -586,13 +876,44 @@
             });
         });
 
-        searchInput.addEventListener('input', function() {
+        searchInput.addEventListener('input', function () {
             renderTools(getActiveFilterType(), this.value);
         });
 
-        modal.onclick = (e) => { if (e.target === modal) closeModalBtn.onclick(); }
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) closeModalBtn.click();
+        });
+        guideOverlay.addEventListener('click', (e) => {
+            if (e.target === guideOverlay) closeGuideModal();
+        });
 
-        // 异步数据载入启动
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                if (!guideOverlay.classList.contains('hidden')) closeGuideModal();
+                if (!modal.classList.contains('hidden')) closeModalBtn.click();
+            }
+        });
+
+        // 暴露全局函数
+        window.triggerAdminLogin = triggerAdminLogin;
+        window.toggleAdminPanel = toggleAdminPanel;
+        window.logoutAdmin = logoutAdmin;
+        window.adaptFormType = adaptFormType;
+        window.handleUpload = handleUpload;
+        window.exportNewJson = exportNewJson;
+        window.deleteTool = deleteTool;
+        window.resetFormToDefault = resetFormToDefault;
+        window.openGuideModal = openGuideModal;
+        window.closeGuideModal = closeGuideModal;
+        window.previewGuide = previewGuide;
+        window.saveGuideForCurrentTool = saveGuideForCurrentTool;
+        window.openModal = openModal;
+        window.toggleModalSize = toggleModalSize;
+        window.toggleFavorite = toggleFavorite;
+        window.handleImageUpload = handleImageUpload;
+        window.removeUploadedImage = removeUploadedImage;
+
+        // 启动
         initData();
     </script>
 </body>
