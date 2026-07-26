@@ -4,17 +4,25 @@
     "name": "MouseFX",
     "desc": "一款轻量酷炫的鼠标特效增强工具，为您在录屏、演示及日常办公时提供极佳的指针视觉反馈。",
     "type": "exe",
-    "favorite": false,
-    "tags": ["桌面美化", "演示提效"],
-    "url": "https://raw.githubusercontent.com/zounvshi/tools/main/MouseFX.exe"
+    "tags": [
+      "桌面美化",
+      "演示提效"
+    ],
+    "url": "https://raw.githubusercontent.com/zounvshi/tools/main/MouseFX.exe",
+    "guide": "<img src=\"https://raw.githubusercontent.com/zounvshi/tools/main/images/guide1.png\" alt=\"操作步骤\" />",
+    "favorite": false
   },
   {
     "id": 2,
     "name": "医药法规数字化协同平台",
     "desc": "专为医药行业打造的数字化合规与政策标准协同查询系统，支持云端高效在线查阅与多方联控。",
     "type": "html",
-    "favorite": false,
-    "tags": ["行业协同", "合规数字化"],
-    "url": "https://zounvshi.github.io/zhiliang"
+    "tags": [
+      "行业协同",
+      "合规数字化"
+    ],
+    "url": "https://zounvshi.github.io/zhiliang",
+    "guide": "",
+    "favorite": false
   }
 ]
