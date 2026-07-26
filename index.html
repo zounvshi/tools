@@ -127,31 +127,6 @@
             color: #38bdf8;
             text-decoration: underline;
         }
-
-        /* 🆕 图片上传区域样式 */
-        .upload-dropzone {
-            border: 2px dashed rgba(56, 189, 248, 0.3);
-            border-radius: 0.75rem;
-            padding: 1rem;
-            text-align: center;
-            transition: all 0.3s ease;
-            cursor: pointer;
-        }
-        .upload-dropzone:hover {
-            border-color: rgba(56, 189, 248, 0.6);
-            background: rgba(56, 189, 248, 0.05);
-        }
-        .upload-dropzone.drag-over {
-            border-color: #38bdf8;
-            background: rgba(56, 189, 248, 0.1);
-        }
-        .image-preview-thumb {
-            width: 60px;
-            height: 60px;
-            object-fit: cover;
-            border-radius: 0.5rem;
-            border: 2px solid rgba(56,189,248,0.4);
-        }
     </style>
 </head>
 <body class="bg-[#02050e] text-gray-100 min-h-screen font-sans selection:bg-sky-500/30 antialiased overflow-x-hidden digital-grid relative">
@@ -268,7 +243,7 @@
         </div>
     </div>
 
-    <!-- 🆕 使用说明弹窗（带图片上传功能） -->
+    <!-- 使用说明弹窗（已移除图片上传功能） -->
     <div id="guide-overlay" class="fixed inset-0 bg-slate-950/95 z-[60] hidden flex items-center justify-center p-4 transition-all">
         <div class="bg-[#0b132b] border border-sky-500/40 rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] flex flex-col overflow-hidden modal-anime">
             <!-- 标题栏 -->
@@ -287,31 +262,13 @@
                 <p class="text-slate-500 italic">暂无使用说明</p>
             </div>
             
-            <!-- 🆕 管理员编辑区（含图片上传） -->
+            <!-- 管理员编辑区（仅文本编辑器，无图片上传） -->
             <div id="adminGuideEditor" class="hidden border-t border-purple-500/30 bg-slate-950/90 p-5 space-y-3">
                 <div class="flex items-center gap-2 text-purple-300 text-xs font-mono">
                     <span class="w-2 h-2 bg-purple-500 rounded-full radar-pulse"></span> 
-                    管理员编辑模式 · 支持HTML图文 · 可上传本地图片
+                    管理员编辑模式 · 支持HTML图文
                 </div>
                 
-                <!-- 🆕 图片上传区域 -->
-                <div id="imageUploadZone" class="upload-dropzone" onclick="document.getElementById('imageFileInput').click()">
-                    <div class="flex flex-col items-center gap-1">
-                        <svg class="w-6 h-6 text-sky-400/60" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                        </svg>
-                        <span class="text-xs text-slate-400">📁 点击上传图片 或 拖拽图片到此处</span>
-                        <span class="text-[10px] text-slate-600">支持 JPG/PNG/GIF/WebP，自动转为Base64嵌入</span>
-                    </div>
-                    <input type="file" id="imageFileInput" accept="image/*" class="hidden" onchange="handleImageUpload(event)">
-                </div>
-                
-                <!-- 🆕 已上传图片预览 -->
-                <div id="uploadedImagesPreview" class="flex flex-wrap gap-2 hidden">
-                    <span class="text-[10px] text-slate-500 w-full">已上传图片（点击插入到编辑器）：</span>
-                </div>
-                
-                <!-- 编辑器 -->
                 <textarea id="guideEditorTextarea" rows="6" 
                     class="w-full bg-slate-900 border border-purple-800 text-slate-200 rounded-lg p-3 text-sm font-mono focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500/50" 
                     placeholder="支持HTML：&lt;p&gt;说明文字&lt;/p&gt;&lt;img src='https://...' alt='截图'&gt;&lt;h3&gt;步骤&lt;/h3&gt;&lt;ol&gt;&lt;li&gt;第一步&lt;/li&gt;&lt;/ol&gt;"></textarea>
@@ -376,8 +333,8 @@
         const ADMIN_PASSWORD = "Lyt12345";
         let isAdmin = false;
         let currentGuideToolId = null;
-        let uploadedImages = []; // 🆕 存储已上传的图片Base64
 
+        // 默认工具数据，guide 字段全部置空
         const defaultTools = [
             { 
                 id: 1, 
@@ -387,7 +344,7 @@
                 favorite: false, 
                 tags: ["桌面美化", "演示提效"], 
                 url: "#",
-                guide: "<h3>🖱️ MouseFX 使用说明</h3><p>安装后右键托盘图标选择<strong>特效方案</strong>，推荐使用「粒子光晕」模式。</p><img src='https://placehold.co/600x300/0b132b/38bdf8?text=MouseFX+效果预览' alt='MouseFX界面'/><p>可在设置中调整<strong>透明度</strong>与<strong>跟随速度</strong>。</p>"
+                guide: ""
             },
             { 
                 id: 2, 
@@ -397,7 +354,7 @@
                 favorite: false, 
                 tags: ["行业协同", "合规数字化"], 
                 url: "https://zounvshi.github.io/zhiliang",
-                guide: "<h3>📋 平台使用指南</h3><p>登录后进入<strong>合规库</strong>，支持关键词检索及版本对比。</p><img src='https://placehold.co/600x300/0b132b/c084fc?text=法规平台仪表盘' alt='平台截图'/><ol><li>输入药品名称或法规编号</li><li>点击「对比」查看历史版本差异</li><li>可导出PDF报告</li></ol>"
+                guide: ""
             }
         ];
 
@@ -425,27 +382,6 @@
         const guideContentArea = document.getElementById('guide-content-area');
         const adminGuideEditor = document.getElementById('adminGuideEditor');
         const guideEditorTextarea = document.getElementById('guideEditorTextarea');
-        const imageUploadZone = document.getElementById('imageUploadZone');
-        const uploadedImagesPreview = document.getElementById('uploadedImagesPreview');
-
-        // 🆕 拖拽上传支持
-        if (imageUploadZone) {
-            imageUploadZone.addEventListener('dragover', (e) => {
-                e.preventDefault();
-                imageUploadZone.classList.add('drag-over');
-            });
-            imageUploadZone.addEventListener('dragleave', () => {
-                imageUploadZone.classList.remove('drag-over');
-            });
-            imageUploadZone.addEventListener('drop', (e) => {
-                e.preventDefault();
-                imageUploadZone.classList.remove('drag-over');
-                const files = e.dataTransfer.files;
-                if (files.length > 0) {
-                    processImageFile(files[0]);
-                }
-            });
-        }
 
         function checkAdminSession() {
             if (sessionStorage.getItem('isAdminActive') === 'true') {
@@ -483,6 +419,7 @@
                 const response = await fetch('./tools.json');
                 if (!response.ok) throw new Error('网络元件文件读取失败');
                 toolsData = await response.json();
+                // 确保每个工具都有 guide 字段
                 toolsData.forEach(tool => { if (!tool.guide) tool.guide = ''; });
             } catch (error) {
                 console.warn("未检索到线上 tools.json，正启用本地存储或默认拓扑:", error);
@@ -601,91 +538,14 @@
             }
         }
 
-        // 🆕 处理图片文件上传
-        function processImageFile(file) {
-            if (!file.type.match('image.*')) {
-                alert('请选择图片文件（JPG/PNG/GIF/WebP）');
-                return;
-            }
-            
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                const base64 = e.target.result;
-                uploadedImages.push({
-                    name: file.name,
-                    base64: base64
-                });
-                renderUploadedImages();
-            };
-            reader.readAsDataURL(file);
-        }
-
-        function handleImageUpload(event) {
-            const file = event.target.files[0];
-            if (file) {
-                processImageFile(file);
-            }
-            // 清空input以便重复上传同一文件
-            event.target.value = '';
-        }
-
-        // 🆕 渲染已上传的图片预览
-        function renderUploadedImages() {
-            if (uploadedImages.length === 0) {
-                uploadedImagesPreview.classList.add('hidden');
-                return;
-            }
-            
-            uploadedImagesPreview.classList.remove('hidden');
-            // 保留提示文字，清空后面的图片预览
-            const images = uploadedImagesPreview.querySelectorAll('.image-preview-item');
-            images.forEach(el => el.remove());
-            
-            uploadedImages.forEach((img, index) => {
-                const div = document.createElement('div');
-                div.className = 'image-preview-item relative group cursor-pointer';
-                div.innerHTML = `
-                    <img src="${img.base64}" alt="${img.name}" class="image-preview-thumb" title="点击插入到编辑器">
-                    <button onclick="removeUploadedImage(${index})" class="absolute -top-1 -right-1 bg-rose-600 text-white rounded-full w-4 h-4 flex items-center justify-center text-[10px] opacity-0 group-hover:opacity-100 transition-opacity">×</button>
-                `;
-                div.onclick = function(e) {
-                    if (e.target.tagName === 'BUTTON') return;
-                    insertImageToEditor(img.base64, img.name);
-                };
-                uploadedImagesPreview.appendChild(div);
-            });
-        }
-
-        // 🆕 插入图片到编辑器
-        function insertImageToEditor(base64, name) {
-            const imgTag = `<img src="${base64}" alt="${name}" />`;
-            const textarea = guideEditorTextarea;
-            const start = textarea.selectionStart;
-            const end = textarea.selectionEnd;
-            const text = textarea.value;
-            textarea.value = text.substring(0, start) + imgTag + text.substring(end);
-            textarea.focus();
-            textarea.setSelectionRange(start + imgTag.length, start + imgTag.length);
-        }
-
-        // 🆕 移除已上传图片
-        function removeUploadedImage(index) {
-            uploadedImages.splice(index, 1);
-            renderUploadedImages();
-        }
-
         function openGuideModal(toolId) {
             const tool = toolsData.find(t => t.id === toolId);
             if (!tool) return;
             currentGuideToolId = toolId;
-            guideTitle.innerText = `📖 ${tool.name} · 使用说明`;
+            guideTitle.innerText = `${tool.name} · 使用说明`;
             guideContentArea.innerHTML = tool.guide && tool.guide.trim() !== ''
                 ? tool.guide
                 : '<div class="text-center py-12 text-slate-500"><p class="text-lg mb-2">📭</p><p class="italic">暂无详细说明</p><p class="text-xs mt-2 text-slate-600">待编辑</p></div>';
-
-            // 清空上传图片缓存
-            uploadedImages = [];
-            renderUploadedImages();
 
             if (isAdmin) {
                 adminGuideEditor.classList.remove('hidden');
@@ -702,8 +562,6 @@
             guideOverlay.classList.add('hidden');
             document.body.style.overflow = 'auto';
             currentGuideToolId = null;
-            uploadedImages = [];
-            renderUploadedImages();
         }
 
         function previewGuide() {
@@ -910,8 +768,6 @@
         window.openModal = openModal;
         window.toggleModalSize = toggleModalSize;
         window.toggleFavorite = toggleFavorite;
-        window.handleImageUpload = handleImageUpload;
-        window.removeUploadedImage = removeUploadedImage;
 
         // 启动
         initData();
