@@ -24,5 +24,18 @@
     "url": "https://zounvshi.github.io/zhiliang",
     "guide": "1.打开网页即用",
     "favorite": false
+  },
+  {
+    "id": 1785120156331,
+    "name": "Everything",
+    "desc": "一款针对Windows系统的极速文件/文件夹搜索工具。它的核心优势是“秒级响应”——索引整个硬盘通常只需几秒钟。",
+    "type": "exe",
+    "tags": [
+      "系统增强",
+      "桌面文件搜索"
+    ],
+    "url": "https://raw.githubusercontent.com/zounvshi/tools/main/Everything.exe",
+    "guide": "1.双击图标打开，在输入框直接敲文件名（例如 工作报告），下方即刻列出结果。\n2.双击打开文件，右键打开所在路径。",
+    "favorite": false
   }
 ]
