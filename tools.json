@@ -8,8 +8,8 @@
       "桌面美化",
       "演示提效"
     ],
-    "url": "https://raw.githubusercontent.com/zounvshi/tools/main/MouseFX.exe",
-    "guide": "<img src="https://raw.githubusercontent.com/zounvshi/tools/refs/heads/main/images/guide1.png" alt="操作步骤" />",
+    "url": "#",
+    "guide": "<img src=\"https://raw.githubusercontent.com/zounvshi/tools/refs/heads/main/images/guide1.png\"alt=\"操作步骤\" />",
     "favorite": false
   },
   {
@@ -22,7 +22,7 @@
       "合规数字化"
     ],
     "url": "https://zounvshi.github.io/zhiliang",
-    "guide": "1.打开网页即可预览、使用",
+    "guide": "",
     "favorite": false
   }
 ]
