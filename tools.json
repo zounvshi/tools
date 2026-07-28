@@ -8,7 +8,7 @@
       "桌面美化",
       "演示提效"
     ],
-    "url": "#",
+    "url": "https://raw.githubusercontent.com/zounvshi/tools/main/MouseFX.exe",
     "guide": "<img src=\"https://raw.githubusercontent.com/zounvshi/tools/refs/heads/main/images/guide1.png\"alt=\"操作步骤\" />",
     "favorite": false
   },
@@ -36,70 +36,6 @@
     ],
     "url": "https://raw.githubusercontent.com/zounvshi/tools/main/Everything.exe",
     "guide": "1.双击图标打开，在输入框直接敲文件名（例如 工作报告），下方即刻列出结果。\n2.双击打开文件，右键打开所在路径。",
-    "favorite": false
-  },
-  {
-    "id": 1785121225040,
-    "name": "测试2",
-    "desc": "占用坑位用",
-    "type": "html",
-    "tags": [
-      "效率",
-      "数字化"
-    ],
-    "url": "#",
-    "guide": "",
-    "favorite": false
-  },
-  {
-    "id": 1785121236142,
-    "name": "测试3",
-    "desc": "占用坑位用",
-    "type": "html",
-    "tags": [
-      "效率",
-      "数字化"
-    ],
-    "url": "#",
-    "guide": "",
-    "favorite": false
-  },
-  {
-    "id": 1785121247117,
-    "name": "测试4",
-    "desc": "占用坑位用",
-    "type": "html",
-    "tags": [
-      "效率",
-      "数字化"
-    ],
-    "url": "#",
-    "guide": "",
-    "favorite": false
-  },
-  {
-    "id": 1785121318942,
-    "name": "哈哈哈",
-    "desc": "占用坑位，主要看网页效果",
-    "type": "html",
-    "tags": [
-      "CUSTOM"
-    ],
-    "url": "#",
-    "guide": "",
-    "favorite": false
-  },
-  {
-    "id": 1785121378260,
-    "name": "嘻嘻",
-    "desc": "占用坑位，主要看网页效果",
-    "type": "exe",
-    "tags": [
-      "效率",
-      "数字化"
-    ],
-    "url": "#",
-    "guide": "",
     "favorite": false
   },
   {
