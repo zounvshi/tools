@@ -80,9 +80,7 @@
             );
         }
 
-        .modern-card:hover::before {
-            opacity: 1;
-        }
+        .modern-card:hover::before { opacity: 1; }
 
         .modern-card:hover {
             transform: translateY(-5px) scale(1.005);
@@ -99,7 +97,7 @@
             z-index: 2;
         }
 
-        #modal-overlay, #admin-overlay, #guide-overlay {
+        #modal-overlay, #admin-overlay, #guide-overlay, #about-overlay {
             backdrop-filter: blur(25px);
             -webkit-backdrop-filter: blur(25px);
             transition: opacity 0.3s ease;
@@ -144,27 +142,27 @@
         }
         .radar-pulse { animation: pulseGlow 2s infinite; }
 
-        .guide-content img {
+        .rich-text-content img {
             max-width: 100%;
             border-radius: 0.75rem;
             margin: 1rem 0;
             border: 1px solid rgba(56,189,248,0.3);
         }
-        .guide-content h1, .guide-content h2, .guide-content h3 {
+        .rich-text-content h1, .rich-text-content h2, .rich-text-content h3 {
             color: #0284c7;
             font-weight: bold;
-            margin: 1rem 0 0.5rem 0;
+            margin: 1.2rem 0 0.6rem 0;
         }
-        .dark .guide-content h1, .dark .guide-content h2, .dark .guide-content h3 {
+        .dark .rich-text-content h1, .dark .rich-text-content h2, .dark .rich-text-content h3 {
             color: #38bdf8;
         }
-        .guide-content p { margin-bottom: 0.75rem; line-height: 1.7; }
-        .guide-content ul, .guide-content ol { margin-left: 1.5rem; margin-bottom: 0.75rem; }
-        .guide-content li { margin-bottom: 0.25rem; }
-        .guide-content strong { color: #334155; }
-        .dark .guide-content strong { color: #cbd5e1; }
-        .guide-content a { color: #0284c7; text-decoration: underline; }
-        .dark .guide-content a { color: #38bdf8; }
+        .rich-text-content p { margin-bottom: 0.8rem; line-height: 1.7; }
+        .rich-text-content ul, .rich-text-content ol { margin-left: 1.5rem; margin-bottom: 0.8rem; list-style-type: disc; }
+        .rich-text-content li { margin-bottom: 0.3rem; }
+        .rich-text-content strong { color: #0f172a; }
+        .dark .rich-text-content strong { color: #f8fafc; }
+        .rich-text-content a { color: #0284c7; text-decoration: underline; }
+        .dark .rich-text-content a { color: #38bdf8; }
     </style>
 </head>
 <body class="bg-[#eaf4f8] dark:bg-[#0b0f19] text-slate-800 dark:text-slate-100 min-h-screen font-sans selection:bg-sky-400/30 antialiased overflow-x-hidden relative text-base transition-colors duration-500">
@@ -175,13 +173,24 @@
     <div class="fixed bottom-[-100px] left-[30%] w-[650px] h-[650px] bg-indigo-400/20 dark:bg-indigo-600/10 rounded-full blur-[140px] pointer-events-none -z-10 transition-colors duration-500"></div>
 
     <!-- 页眉区 -->
-    <header class="max-w-[1600px] mx-auto px-8 pt-14 pb-10 border-b border-slate-300/40 dark:border-slate-800/80 relative">
+    <header class="max-w-[1600px] mx-auto px-8 pt-10 pb-10 border-b border-slate-300/40 dark:border-slate-800/80 relative">
+        <!-- 顶部导航条（右上角“关于我们”） -->
+        <div class="flex justify-between items-center mb-6">
+            <div class="flex items-center gap-3">
+                <span class="bg-slate-900 dark:bg-sky-500 text-white dark:text-slate-950 text-xs font-black tracking-widest px-3 py-1 rounded-lg shadow-md transition-colors">TOOL KIT</span>
+                <span ondblclick="triggerAdminLogin()" class="text-slate-600 dark:text-slate-400 text-sm font-mono tracking-wider cursor-default select-none hover:text-slate-900 dark:hover:text-white transition-colors font-medium">高效数字工作流平台</span>
+            </div>
+            
+            <!-- 右上角快捷入口组 -->
+            <div class="flex items-center gap-3">
+                <button onclick="openAboutModal()" class="flex items-center gap-1.5 bg-white/60 dark:bg-slate-800/60 hover:bg-white dark:hover:bg-slate-800 border border-white/80 dark:border-slate-700/60 text-slate-700 dark:text-slate-300 px-4 py-2 rounded-xl text-xs font-bold transition-all shadow-sm">
+                    <span>关于我们</span>
+                </button>
+            </div>
+        </div>
+
         <div class="flex flex-col lg:flex-row lg:items-end justify-between gap-8">
             <div>
-                <div class="flex items-center gap-3 mb-4">
-                    <span class="bg-slate-900 dark:bg-sky-500 text-white dark:text-slate-950 text-xs font-black tracking-widest px-3 py-1 rounded-lg shadow-md transition-colors">TOOL KIT</span>
-                    <span ondblclick="triggerAdminLogin()" class="text-slate-600 dark:text-slate-400 text-sm font-mono tracking-wider cursor-default select-none hover:text-slate-900 dark:hover:text-white transition-colors font-medium">高效数字工作流平台</span>
-                </div>
                 <h1 class="text-5xl md:text-6xl font-black tracking-tight text-slate-900 dark:text-white mb-4">
                     办公提效工具集成
                 </h1>
@@ -262,6 +271,46 @@
         </div>
     </main>
 
+    <!-- 「关于我们」模态框 -->
+    <div id="about-overlay" class="fixed inset-0 bg-slate-900/40 dark:bg-black/60 backdrop-blur-md z-[60] hidden flex items-center justify-center p-4 transition-all">
+        <div class="bg-white/95 dark:bg-slate-900/95 border border-white/80 dark:border-slate-800 rounded-3xl shadow-2xl w-full max-w-3xl max-h-[90vh] flex flex-col overflow-hidden modal-anime">
+            <div class="flex justify-between items-center px-6 py-4 border-b border-slate-200 dark:border-slate-800 bg-slate-50/80 dark:bg-slate-900/80">
+                <div class="flex items-center gap-2.5">
+                    <span class="text-2xl">💡</span>
+                    <h3 class="text-lg font-bold text-slate-900 dark:text-white font-mono">关于本平台</h3>
+                </div>
+                <button onclick="closeAboutModal()" class="text-slate-500 hover:text-slate-900 dark:hover:text-white bg-slate-200/80 dark:bg-slate-800 rounded-xl p-2 transition-all">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/></svg>
+                </button>
+            </div>
+            
+            <div id="about-content-area" class="flex-1 overflow-y-auto p-8 text-slate-700 dark:text-slate-300 text-base leading-relaxed rich-text-content space-y-4">
+                <!-- 动态渲染关于我们内容 -->
+            </div>
+            
+            <div id="adminAboutEditor" class="hidden border-t border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/50 p-6 space-y-4">
+                <div class="flex items-center gap-2 text-purple-600 dark:text-purple-400 text-xs font-mono font-bold">
+                    <span class="w-2 h-2 bg-purple-600 rounded-full radar-pulse"></span> 
+                    管理员编辑模式 · 修改全站「关于我们」
+                </div>
+                
+                <textarea id="aboutEditorTextarea" rows="6" 
+                    class="w-full bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white rounded-xl p-4 text-sm font-mono focus:outline-none focus:border-purple-600 focus:ring-2 focus:ring-purple-500/20" 
+                    placeholder="支持 HTML 标签..."></textarea>
+                
+                <div class="flex justify-between items-center">
+                    <p class="text-slate-500 text-xs">💡 可使用 &lt;h2&gt;、&lt;p&gt;、&lt;ul&gt; 等标签，保存后记得在管理员面板导出配置同步全网。</p>
+                    <div class="flex gap-3">
+                        <button onclick="previewAbout()" class="bg-slate-200 dark:bg-slate-800 hover:bg-slate-300 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 text-xs px-4 py-2.5 rounded-xl font-bold transition-all border border-slate-300 dark:border-slate-700">👁️ 预览</button>
+                        <button onclick="saveAboutContent()" class="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white text-xs px-5 py-2.5 rounded-xl font-bold shadow-md transition-all">
+                            💾 保存信息
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- 在线预览模态框 -->
     <div id="modal-overlay" class="fixed inset-0 bg-slate-900/40 dark:bg-black/60 backdrop-blur-md z-50 hidden flex items-center justify-center p-3 md:p-8 transition-all">
         <div id="modalContainer" class="bg-white/90 dark:bg-slate-900/90 border border-white/80 dark:border-slate-700 shadow-2xl rounded-3xl w-full max-w-7xl h-[88vh] flex flex-col overflow-hidden modal-anime transition-all duration-300">
@@ -305,7 +354,7 @@
                 </button>
             </div>
             
-            <div id="guide-content-area" class="flex-1 overflow-y-auto p-8 text-slate-700 dark:text-slate-300 text-base leading-relaxed guide-content space-y-4">
+            <div id="guide-content-area" class="flex-1 overflow-y-auto p-8 text-slate-700 dark:text-slate-300 text-base leading-relaxed rich-text-content space-y-4">
                 <p class="text-slate-400 italic">暂无使用说明</p>
             </div>
             
@@ -379,6 +428,21 @@
         let isAdmin = false;
         let currentGuideToolId = null;
 
+        // 默认关于我们内容
+        const defaultAboutContent = `
+            <h2>🚀 关于办公提效工具集成平台</h2>
+            <p>这是一个专为现代数字办公打造的高效工具聚合枢纽。旨在帮助团队与个人打破软件孤岛，实现即拿即用、无缝连接的数字化工作流。</p>
+            <h3>🌟 平台核心优势</h3>
+            <ul>
+                <li><strong>高频便携（EXE）：</strong> 精选轻量化免安装绿色桌面软件，一键下载直达。</li>
+                <li><strong>云端协同（Web）：</strong> 聚合现代化 Web 在线协同应用，支持内嵌沙盒即时预览。</li>
+                <li><strong>极致美学：</strong> 采用 Glassmorphism 磨玻璃视觉与灵动光斑微互动，提供舒心顺畅的沉浸体验。</li>
+            </ul>
+            <p><i>Version 2.0 · Powered by Ultra-Fast Digital Workflow Architecture</i></p>
+        `;
+
+        let aboutContent = defaultAboutContent;
+
         // --- 深色模式管理 ---
         function initTheme() {
             const savedTheme = localStorage.getItem('theme');
@@ -447,6 +511,11 @@
         const adminGuideEditor = document.getElementById('adminGuideEditor');
         const guideEditorTextarea = document.getElementById('guideEditorTextarea');
 
+        const aboutOverlay = document.getElementById('about-overlay');
+        const aboutContentArea = document.getElementById('about-content-area');
+        const adminAboutEditor = document.getElementById('adminAboutEditor');
+        const aboutEditorTextarea = document.getElementById('aboutEditorTextarea');
+
         function checkAdminSession() {
             if (sessionStorage.getItem('isAdminActive') === 'true') {
                 isAdmin = true;
@@ -473,6 +542,7 @@
             document.getElementById('adminPanelBtn').classList.add('hidden');
             toggleAdminPanel(false);
             closeGuideModal();
+            closeAboutModal();
             alert("内网凭证已安全注销。");
             renderTools(getActiveFilterType(), searchInput.value);
         }
@@ -483,11 +553,22 @@
             try {
                 const response = await fetch('./tools.json');
                 if (!response.ok) throw new Error('网络元件文件读取失败');
-                toolsData = await response.json();
+                const jsonContent = await response.json();
+                
+                // 兼容带 about 属性的 json 结构
+                if (Array.isArray(jsonContent)) {
+                    toolsData = jsonContent;
+                } else {
+                    toolsData = jsonContent.tools || [];
+                    if (jsonContent.about) aboutContent = jsonContent.about;
+                }
                 toolsData.forEach(tool => { if (!tool.guide) tool.guide = ''; });
             } catch (error) {
                 console.warn("未检索到线上 tools.json，正启用本地存储或默认拓扑:", error);
                 const localData = localStorage.getItem('customToolsData');
+                const localAbout = localStorage.getItem('customAboutData');
+                if (localAbout) aboutContent = localAbout;
+
                 if (localData) {
                     toolsData = JSON.parse(localData);
                     toolsData.forEach(tool => { if (!tool.guide) tool.guide = ''; });
@@ -515,6 +596,7 @@
 
         function syncToLocalStorage() {
             localStorage.setItem('customToolsData', JSON.stringify(toolsData));
+            localStorage.setItem('customAboutData', aboutContent);
         }
 
         function toggleAdminPanel(show) {
@@ -570,15 +652,19 @@
         }
 
         function exportNewJson() {
-            const cleanData = toolsData.map(({ favorite, ...rest }) => ({ ...rest, favorite: false }));
-            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(cleanData, null, 2));
+            const cleanTools = toolsData.map(({ favorite, ...rest }) => ({ ...rest, favorite: false }));
+            const exportObject = {
+                about: aboutContent,
+                tools: cleanTools
+            };
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(exportObject, null, 2));
             const downloadAnchor = document.createElement('a');
             downloadAnchor.setAttribute("href", dataStr);
             downloadAnchor.setAttribute("download", "tools.json");
             document.body.appendChild(downloadAnchor);
             downloadAnchor.click();
             downloadAnchor.remove();
-            alert("✅ 已导出 tools.json，请替换GitHub仓库中的文件以同步更新。");
+            alert("✅ 已导出 tools.json（含最新‘关于我们’与工具数据），请替换 GitHub 仓库中的文件以同步更新。");
         }
 
         function deleteTool(id) {
@@ -594,7 +680,9 @@
         function resetFormToDefault() {
             if (confirm("重置整个阵列恢复至出厂拓扑？这将清除所有自定义数据。")) {
                 localStorage.removeItem('customToolsData');
+                localStorage.removeItem('customAboutData');
                 toolsData = [...defaultTools];
+                aboutContent = defaultAboutContent;
                 syncToLocalStorage();
                 toggleAdminPanel(false);
                 renderTools('all', '');
@@ -602,6 +690,37 @@
             }
         }
 
+        // --- 关于我们弹窗与编辑 ---
+        function openAboutModal() {
+            aboutContentArea.innerHTML = aboutContent;
+            if (isAdmin) {
+                adminAboutEditor.classList.remove('hidden');
+                aboutEditorTextarea.value = aboutContent;
+            } else {
+                adminAboutEditor.classList.add('hidden');
+            }
+            aboutOverlay.classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeAboutModal() {
+            aboutOverlay.classList.add('hidden');
+            document.body.style.overflow = 'auto';
+        }
+
+        function previewAbout() {
+            aboutContentArea.innerHTML = aboutEditorTextarea.value || '<p class="text-slate-400 italic">预览为空</p>';
+        }
+
+        function saveAboutContent() {
+            if (!isAdmin) return;
+            aboutContent = aboutEditorTextarea.value;
+            syncToLocalStorage();
+            aboutContentArea.innerHTML = aboutContent;
+            alert("✅ 关于我们内容已保存！请去管理员面板导出新配置以同步所有人。");
+        }
+
+        // --- 使用说明弹窗 ---
         function openGuideModal(toolId) {
             const tool = toolsData.find(t => t.id === toolId);
             if (!tool) return;
@@ -820,15 +939,23 @@
         guideOverlay.addEventListener('click', (e) => {
             if (e.target === guideOverlay) closeGuideModal();
         });
+        aboutOverlay.addEventListener('click', (e) => {
+            if (e.target === aboutOverlay) closeAboutModal();
+        });
 
         document.addEventListener('keydown', (e) => {
             if (e.key === 'Escape') {
+                if (!aboutOverlay.classList.contains('hidden')) closeAboutModal();
                 if (!guideOverlay.classList.contains('hidden')) closeGuideModal();
                 if (!modal.classList.contains('hidden')) closeModalBtn.click();
             }
         });
 
         // 暴露全局函数
+        window.openAboutModal = openAboutModal;
+        window.closeAboutModal = closeAboutModal;
+        window.previewAbout = previewAbout;
+        window.saveAboutContent = saveAboutContent;
         window.toggleDarkMode = toggleDarkMode;
         window.handleCardMouseMove = handleCardMouseMove;
         window.triggerAdminLogin = triggerAdminLogin;
