@@ -1,68 +1,107 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="zh-CN" class="light">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>办公提效工具集成平台</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+        }
+    </script>
     <style>
-        ::-webkit-scrollbar { width: 6px; height: 6px; }
-        ::-webkit-scrollbar-track { background: #070a13; }
-        ::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 99px; }
-        ::-webkit-scrollbar-thumb:hover { background: #38bdf8; }
-        
-        .digital-grid {
-            background-image: 
-                linear-gradient(rgba(56, 189, 248, 0.03) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(56, 189, 248, 0.03) 1px, transparent 1px);
-            background-size: 30px 30px;
-            background-position: center;
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 99px; }
+        .dark ::-webkit-scrollbar-thumb { background: #334155; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+
+        /* --- 浅色磨玻璃 --- */
+        .glass-panel {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.7) 0%, rgba(255, 255, 255, 0.35) 100%);
+            backdrop-filter: blur(20px) saturate(160%);
+            -webkit-backdrop-filter: blur(20px) saturate(160%);
+            border: 1px solid rgba(255, 255, 255, 0.6);
+            border-top: 1px solid rgba(255, 255, 255, 0.9);
+            box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.05), inset 0 1px 0 0 rgba(255, 255, 255, 0.8);
         }
 
+        /* --- 深色磨玻璃 --- */
+        .dark .glass-panel {
+            background: linear-gradient(135deg, rgba(30, 41, 59, 0.7) 0%, rgba(15, 23, 42, 0.4) 100%);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-top: 1px solid rgba(255, 255, 255, 0.15);
+            box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.3), inset 0 1px 0 0 rgba(255, 255, 255, 0.1);
+        }
+
+        /* --- 现代磨玻璃卡片 (集成动态光斑) --- */
         .modern-card {
             position: relative;
-            background: rgba(11, 19, 43, 0.75);
-            backdrop-filter: blur(16px);
-            border: 1px solid rgba(56, 189, 248, 0.15);
-            border-radius: 1rem;
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.65) 0%, rgba(255, 255, 255, 0.25) 100%);
+            backdrop-filter: blur(24px) saturate(180%);
+            -webkit-backdrop-filter: blur(24px) saturate(180%);
+            border-radius: 1.5rem;
             overflow: hidden;
-            transition: all 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+            transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.35s ease, border-color 0.35s ease;
+            box-shadow: 0 12px 32px 0 rgba(31, 38, 135, 0.04), inset 0 1px 1px 0 rgba(255, 255, 255, 0.9);
+            border: 1px solid rgba(255, 255, 255, 0.6);
+            border-top: 1px solid rgba(255, 255, 255, 0.9);
         }
-        
-        .modern-card::after {
-            content: '';
+
+        .dark .modern-card {
+            background: linear-gradient(135deg, rgba(30, 41, 59, 0.6) 0%, rgba(15, 23, 42, 0.3) 100%);
+            box-shadow: 0 12px 32px 0 rgba(0, 0, 0, 0.3), inset 0 1px 1px 0 rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-top: 1px solid rgba(255, 255, 255, 0.15);
+        }
+
+        /* 微光斑跟随层 */
+        .modern-card::before {
+            content: "";
             position: absolute;
-            inset: -2px;
-            border-radius: 1rem;
-            background: conic-gradient(from 0deg, transparent 30%, #38bdf8, #a855f7, transparent 70%);
-            z-index: -1;
+            inset: 0;
+            background: radial-gradient(
+                600px circle at var(--mouse-x, 50%) var(--mouse-y, 50%),
+                rgba(56, 189, 248, 0.15),
+                transparent 40%
+            );
             opacity: 0;
-            transition: opacity 0.4s ease;
-            animation: rotateGlow 3s linear infinite;
+            transition: opacity 0.3s ease;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .dark .modern-card::before {
+            background: radial-gradient(
+                600px circle at var(--mouse-x, 50%) var(--mouse-y, 50%),
+                rgba(14, 165, 233, 0.25),
+                transparent 40%
+            );
+        }
+
+        .modern-card:hover::before {
+            opacity: 1;
         }
 
         .modern-card:hover {
-            transform: translateY(-6px) scale(1.01);
-            border-color: transparent;
-            box-shadow: 0 20px 40px -15px rgba(56, 189, 248, 0.3);
+            transform: translateY(-5px) scale(1.005);
+            box-shadow: 0 20px 40px -10px rgba(14, 165, 233, 0.2), 0 0 20px rgba(56, 189, 248, 0.2);
+            border-color: rgba(56, 189, 248, 0.5);
         }
-
-        .modern-card:hover::after { opacity: 1; }
 
         .card-inner {
-            background: rgba(9, 15, 35, 0.93);
-            border-radius: 0.95rem;
+            background: transparent;
+            border-radius: 1.5rem;
             height: 100%;
             width: 100%;
+            position: relative;
+            z-index: 2;
         }
 
-        @keyframes rotateGlow {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-        
         #modal-overlay, #admin-overlay, #guide-overlay {
-            backdrop-filter: blur(20px);
+            backdrop-filter: blur(25px);
+            -webkit-backdrop-filter: blur(25px);
             transition: opacity 0.3s ease;
         }
         .modal-anime {
@@ -77,24 +116,31 @@
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 
-        .cyber-tag-blue {
-            color: #38bdf8;
-            background: rgba(14, 165, 233, 0.1);
-            border: 1px solid rgba(56, 189, 248, 0.4);
-            text-shadow: 0 0 6px rgba(56, 189, 248, 0.8);
-            box-shadow: inset 0 0 8px rgba(56, 189, 248, 0.2);
+        /* 标签浅色/深色兼容 */
+        .tag-exe {
+            color: #0f766e;
+            background: rgba(204, 251, 241, 0.8);
+            border: 1px solid rgba(13, 148, 136, 0.3);
         }
-        .cyber-tag-purple {
-            color: #c084fc;
-            background: rgba(168, 85, 247, 0.1);
-            border: 1px solid rgba(192, 132, 252, 0.4);
-            text-shadow: 0 0 6px rgba(192, 132, 252, 0.8);
-            box-shadow: inset 0 0 8px rgba(192, 132, 252, 0.2);
+        .dark .tag-exe {
+            color: #2dd4bf;
+            background: rgba(20, 83, 45, 0.4);
+            border: 1px solid rgba(45, 212, 191, 0.3);
+        }
+        .tag-web {
+            color: #0369a1;
+            background: rgba(224, 242, 254, 0.8);
+            border: 1px solid rgba(2, 132, 199, 0.3);
+        }
+        .dark .tag-web {
+            color: #38bdf8;
+            background: rgba(12, 74, 110, 0.4);
+            border: 1px solid rgba(56, 189, 248, 0.3);
         }
 
         @keyframes pulseGlow {
-            0%, 100% { opacity: 0.3; }
-            50% { opacity: 0.8; }
+            0%, 100% { opacity: 0.4; }
+            50% { opacity: 0.9; }
         }
         .radar-pulse { animation: pulseGlow 2s infinite; }
 
@@ -105,137 +151,140 @@
             border: 1px solid rgba(56,189,248,0.3);
         }
         .guide-content h1, .guide-content h2, .guide-content h3 {
-            color: #38bdf8;
+            color: #0284c7;
             font-weight: bold;
             margin: 1rem 0 0.5rem 0;
         }
-        .guide-content p {
-            margin-bottom: 0.75rem;
-            line-height: 1.7;
-        }
-        .guide-content ul, .guide-content ol {
-            margin-left: 1.5rem;
-            margin-bottom: 0.75rem;
-        }
-        .guide-content li {
-            margin-bottom: 0.25rem;
-        }
-        .guide-content strong {
-            color: #e2e8f0;
-        }
-        .guide-content a {
+        .dark .guide-content h1, .dark .guide-content h2, .dark .guide-content h3 {
             color: #38bdf8;
-            text-decoration: underline;
         }
+        .guide-content p { margin-bottom: 0.75rem; line-height: 1.7; }
+        .guide-content ul, .guide-content ol { margin-left: 1.5rem; margin-bottom: 0.75rem; }
+        .guide-content li { margin-bottom: 0.25rem; }
+        .guide-content strong { color: #334155; }
+        .dark .guide-content strong { color: #cbd5e1; }
+        .guide-content a { color: #0284c7; text-decoration: underline; }
+        .dark .guide-content a { color: #38bdf8; }
     </style>
 </head>
-<body class="bg-[#02050e] text-gray-100 min-h-screen font-sans selection:bg-sky-500/30 antialiased overflow-x-hidden digital-grid relative">
+<body class="bg-[#eaf4f8] dark:bg-[#0b0f19] text-slate-800 dark:text-slate-100 min-h-screen font-sans selection:bg-sky-400/30 antialiased overflow-x-hidden relative text-base transition-colors duration-500">
 
-    <!-- 背景科幻光晕 -->
-    <div class="absolute top-0 left-1/4 w-[600px] h-[600px] bg-sky-500/5 rounded-full blur-[150px] pointer-events-none -z-10"></div>
-    <div class="absolute top-40 right-1/4 w-[500px] h-[500px] bg-purple-500/5 rounded-full blur-[150px] pointer-events-none -z-10"></div>
+    <!-- 动态色彩背景球 -->
+    <div class="fixed top-[-100px] left-[-100px] w-[700px] h-[700px] bg-sky-400/30 dark:bg-sky-600/15 rounded-full blur-[140px] pointer-events-none -z-10 transition-colors duration-500"></div>
+    <div class="fixed top-[20%] right-[-100px] w-[750px] h-[750px] bg-purple-400/25 dark:bg-purple-600/15 rounded-full blur-[150px] pointer-events-none -z-10 transition-colors duration-500"></div>
+    <div class="fixed bottom-[-100px] left-[30%] w-[650px] h-[650px] bg-indigo-400/20 dark:bg-indigo-600/10 rounded-full blur-[140px] pointer-events-none -z-10 transition-colors duration-500"></div>
 
     <!-- 页眉区 -->
-    <header class="max-w-7xl mx-auto px-6 pt-12 pb-8 border-b border-sky-950/40 relative">
-        <div class="flex flex-col md:flex-row md:items-end justify-between gap-6">
+    <header class="max-w-[1600px] mx-auto px-8 pt-14 pb-10 border-b border-slate-300/40 dark:border-slate-800/80 relative">
+        <div class="flex flex-col lg:flex-row lg:items-end justify-between gap-8">
             <div>
-                <div class="flex items-center gap-2.5 mb-3">
-                    <span class="bg-gradient-to-r from-sky-500 to-blue-600 text-slate-950 text-[10px] font-black tracking-wider px-2.5 py-0.5 rounded-md shadow-lg shadow-sky-500/20">TOOL KIT</span>
-                    <span ondblclick="triggerAdminLogin()" class="text-slate-600 text-xs font-mono tracking-wider cursor-default select-none hover:text-sky-400/70 transition-colors">高效数字工作流平台</span>
+                <div class="flex items-center gap-3 mb-4">
+                    <span class="bg-slate-900 dark:bg-sky-500 text-white dark:text-slate-950 text-xs font-black tracking-widest px-3 py-1 rounded-lg shadow-md transition-colors">TOOL KIT</span>
+                    <span ondblclick="triggerAdminLogin()" class="text-slate-600 dark:text-slate-400 text-sm font-mono tracking-wider cursor-default select-none hover:text-slate-900 dark:hover:text-white transition-colors font-medium">高效数字工作流平台</span>
                 </div>
-                <h1 class="text-4xl md:text-5xl font-black tracking-tight bg-gradient-to-r from-white via-slate-200 to-slate-400 bg-clip-text text-transparent mb-4">
+                <h1 class="text-5xl md:text-6xl font-black tracking-tight text-slate-900 dark:text-white mb-4">
                     办公提效工具集成
                 </h1>
-                <p class="text-slate-400 max-w-xl text-sm leading-relaxed font-light">
-                    聚合高频便携桌面工具（<span class="text-sky-400 font-medium">.exe</span>）与现代化在线云网页（<span class="text-purple-400 font-medium">Web</span>），一键秒级启航。
+                <p class="text-slate-600 dark:text-slate-400 max-w-2xl text-base leading-relaxed font-normal">
+                    聚合高频便携桌面工具（<span class="text-sky-600 dark:text-sky-400 font-bold">.exe</span>）与现代化在线云网页（<span class="text-purple-600 dark:text-purple-400 font-bold">Web</span>），一键秒级启航。
                 </p>
             </div>
             
-            <div class="grid grid-cols-3 gap-4 w-full md:w-auto md:min-w-[420px]">
-                <div class="bg-slate-950/80 border border-sky-950/50 rounded-xl p-4 text-center backdrop-blur-sm relative overflow-hidden group">
-                    <div class="absolute top-0 left-0 w-full h-[2px] bg-sky-500/30"></div>
-                    <div class="text-slate-500 text-[10px] mb-1 font-mono tracking-widest uppercase">Total_Tools</div>
-                    <div class="text-3xl font-black text-white tracking-tight font-mono" id="totalCount">0</div>
+            <div class="grid grid-cols-3 gap-5 w-full lg:w-auto lg:min-w-[520px]">
+                <div class="glass-panel rounded-2xl p-5 text-center relative overflow-hidden group">
+                    <div class="absolute top-0 left-0 w-full h-[3px] bg-sky-500"></div>
+                    <div class="text-slate-500 dark:text-slate-400 text-xs mb-1 font-mono tracking-widest uppercase font-bold">Total_Tools</div>
+                    <div class="text-4xl font-black text-slate-900 dark:text-white tracking-tight font-mono" id="totalCount">0</div>
                 </div>
-                <div class="bg-slate-950/80 border border-purple-950/50 rounded-xl p-4 text-center backdrop-blur-sm relative overflow-hidden group">
-                    <div class="absolute top-0 left-0 w-full h-[2px] bg-purple-500/30"></div>
-                    <div class="text-slate-500 text-[10px] mb-1 font-mono tracking-widest uppercase">Dimension</div>
-                    <div class="text-3xl font-black bg-gradient-to-r from-sky-400 to-purple-400 bg-clip-text text-transparent tracking-tight font-mono">02</div>
+                <div class="glass-panel rounded-2xl p-5 text-center relative overflow-hidden group">
+                    <div class="absolute top-0 left-0 w-full h-[3px] bg-purple-500"></div>
+                    <div class="text-slate-500 dark:text-slate-400 text-xs mb-1 font-mono tracking-widest uppercase font-bold">Dimension</div>
+                    <div class="text-4xl font-black text-slate-900 dark:text-white tracking-tight font-mono">02</div>
                 </div>
-                <div class="bg-slate-950/80 border border-rose-950/50 rounded-xl p-4 text-center backdrop-blur-sm relative overflow-hidden group">
-                    <div class="absolute top-0 left-0 w-full h-[2px] bg-rose-500/30"></div>
-                    <div class="text-slate-500 text-[10px] mb-1 font-mono tracking-widest uppercase">Favorites</div>
-                    <div class="text-3xl font-black text-rose-400 tracking-tight font-mono" id="favCount">0</div>
+                <div class="glass-panel rounded-2xl p-5 text-center relative overflow-hidden group">
+                    <div class="absolute top-0 left-0 w-full h-[3px] bg-rose-500"></div>
+                    <div class="text-slate-500 dark:text-slate-400 text-xs mb-1 font-mono tracking-widest uppercase font-bold">Favorites</div>
+                    <div class="text-4xl font-black text-slate-900 dark:text-white tracking-tight font-mono" id="favCount">0</div>
                 </div>
             </div>
         </div>
     </header>
 
-    <!-- 粘性吸顶工具栏 -->
-    <div class="sticky top-0 z-40 bg-[#02050e]/80 backdrop-blur-md border-b border-sky-950/30 shadow-2xl shadow-slate-950/50 transition-all duration-300">
-        <div class="max-w-7xl mx-auto px-6 py-4 flex flex-col md:flex-row items-center justify-between gap-4">
+    <!-- 悬浮吸顶工具栏 -->
+    <div class="sticky top-4 z-40 max-w-[1600px] mx-auto px-8 transition-all duration-300 pointer-events-none">
+        <div class="glass-panel rounded-2xl p-2.5 shadow-lg pointer-events-auto flex flex-col md:flex-row items-center justify-between gap-3">
+            
+            <!-- 搜索框 -->
             <div class="relative w-full md:max-w-md shrink-0">
-                <span class="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none text-sky-400/60 group-focus-within:text-sky-400 transition-colors">
+                <span class="absolute inset-y-0 left-0 flex items-center pl-3.5 pointer-events-none text-slate-400 dark:text-slate-500">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
                 </span>
                 <input type="text" id="searchInput" placeholder="检索工具、用途..." 
-                       class="w-full bg-slate-950/90 text-slate-200 placeholder-slate-600 rounded-xl pl-11 pr-4 py-2.5 text-sm font-mono transition-all duration-300
-                              border border-sky-500/30 shadow-[inset_0_0_12px_rgba(56,189,248,0.06),0_0_8px_rgba(56,189,248,0.03)]
-                              hover:border-sky-500/50 hover:shadow-[inset_0_0_12px_rgba(56,189,248,0.1),0_0_12px_rgba(56,189,248,0.08)]
-                              focus:outline-none focus:border-sky-400 focus:ring-1 focus:ring-sky-400/40 focus:shadow-[inset_0_0_16px_rgba(56,189,248,0.15),0_0_20px_rgba(56,189,248,0.2)]">
+                       class="w-full bg-white/50 dark:bg-slate-900/60 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 rounded-xl pl-10 pr-4 py-2 text-sm font-mono transition-all duration-300
+                              border border-white/60 dark:border-slate-700/50 shadow-inner
+                              focus:outline-none focus:bg-white dark:focus:bg-slate-900 focus:border-sky-500 focus:ring-2 focus:ring-sky-500/20">
             </div>
             
+            <!-- 筛选与控制区 -->
             <div class="flex items-center justify-between md:justify-end gap-3 w-full md:w-auto overflow-x-auto no-scrollbar">
-                <div class="flex items-center gap-1.5 bg-slate-950/60 p-1 rounded-xl border border-sky-950/40 shrink-0">
-                    <button class="filter-btn shrink-0 bg-sky-500 text-slate-950 px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all shadow-md shadow-sky-500/20" data-type="all">全部工具</button>
-                    <button class="filter-btn shrink-0 text-slate-400 hover:text-slate-200 px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all" data-type="exe">.EXE 桌面端</button>
-                    <button class="filter-btn shrink-0 text-slate-400 hover:text-slate-200 px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all" data-type="html">WEB 在线版</button>
+                <!-- 一体化分类切页 -->
+                <div class="flex items-center gap-1 bg-black/5 dark:bg-white/5 p-1 rounded-xl shrink-0">
+                    <button class="filter-btn shrink-0 bg-white dark:bg-slate-800 text-slate-900 dark:text-white shadow-sm px-4 py-1.5 rounded-lg text-xs font-bold transition-all" data-type="all">全部</button>
+                    <button class="filter-btn shrink-0 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white px-4 py-1.5 rounded-lg text-xs font-bold transition-all" data-type="exe">.EXE 桌面端</button>
+                    <button class="filter-btn shrink-0 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white px-4 py-1.5 rounded-lg text-xs font-bold transition-all" data-type="html">WEB 在线版</button>
                 </div>
                 
-                <span class="hidden md:block w-px h-5 bg-sky-950/60"></span>
+                <span class="hidden md:block w-px h-5 bg-slate-300/60 dark:bg-slate-700/60"></span>
 
-                <button id="favToggle" class="flex items-center gap-1.5 bg-slate-950/80 hover:bg-slate-900 border border-sky-950/40 text-slate-400 hover:text-rose-400 px-3.5 py-2 rounded-xl text-xs font-semibold transition-all shrink-0">
+                <!-- 收藏按钮 -->
+                <button id="favToggle" class="flex items-center gap-1.5 bg-white/60 dark:bg-slate-800/60 hover:bg-white dark:hover:bg-slate-800 border border-white/80 dark:border-slate-700/60 text-slate-700 dark:text-slate-300 hover:text-rose-600 dark:hover:text-rose-400 px-4 py-2 rounded-xl text-xs font-bold transition-all shadow-sm shrink-0">
                     <svg id="favToggleIcon" class="w-3.5 h-3.5 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" /></svg>
                     <span id="favToggleText">查看收藏</span>
                 </button>
 
-                <button id="adminPanelBtn" onclick="toggleAdminPanel(true)" class="hidden flex items-center gap-1 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white border border-purple-500/30 px-3.5 py-2 rounded-xl text-xs font-bold transition-all shadow-lg shrink-0">
-                    🛠️ 管理员面板
+                <!-- 深色/浅色模式切换按钮 -->
+                <button id="themeToggleBtn" onclick="toggleDarkMode()" class="flex items-center justify-center w-9 h-9 bg-white/60 dark:bg-slate-800/60 hover:bg-white dark:hover:bg-slate-800 border border-white/80 dark:border-slate-700/60 text-slate-700 dark:text-slate-300 rounded-xl text-xs transition-all shadow-sm shrink-0" title="切换暗色/浅色主题">
+                    <span id="themeIcon">🌙</span>
+                </button>
+
+                <!-- 管理员面板触发按钮 -->
+                <button id="adminPanelBtn" onclick="toggleAdminPanel(true)" class="hidden flex items-center gap-1.5 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white px-4 py-2 rounded-xl text-xs font-bold transition-all shadow-md shrink-0">
+                    🛠️ 管理员
                 </button>
             </div>
         </div>
     </div>
 
     <!-- 主体卡片网格区 -->
-    <main class="max-w-7xl mx-auto px-6 pt-8 pb-24">
-        <div id="cardGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    <main class="max-w-[1600px] mx-auto px-8 pt-10 pb-28">
+        <div id="cardGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-8">
             <!-- JS 动态渲染 -->
         </div>
     </main>
 
     <!-- 在线预览模态框 -->
-    <div id="modal-overlay" class="fixed inset-0 bg-slate-950/95 z-50 hidden flex items-center justify-center p-2 md:p-6 transition-all">
-        <div id="modalContainer" class="bg-[#090f23] border border-sky-500/30 rounded-2xl shadow-2xl w-full max-w-6xl h-[85vh] flex flex-col overflow-hidden modal-anime transition-all duration-300">
-            <div class="flex flex-wrap justify-between items-center px-4 py-3 border-b border-sky-950/60 bg-slate-950/40 backdrop-blur-sm gap-2">
-                <div class="flex items-center gap-2">
-                    <span class="w-2 h-2 rounded-full bg-purple-500 radar-pulse shadow-md shadow-purple-500/80"></span>
-                    <h3 class="text-sm font-bold text-white tracking-wide font-mono truncate max-w-[180px] sm:max-w-xs" id="modal-title">SANDBOX_ENVIRONMENT</h3>
+    <div id="modal-overlay" class="fixed inset-0 bg-slate-900/40 dark:bg-black/60 backdrop-blur-md z-50 hidden flex items-center justify-center p-3 md:p-8 transition-all">
+        <div id="modalContainer" class="bg-white/90 dark:bg-slate-900/90 border border-white/80 dark:border-slate-700 shadow-2xl rounded-3xl w-full max-w-7xl h-[88vh] flex flex-col overflow-hidden modal-anime transition-all duration-300">
+            <div class="flex flex-wrap justify-between items-center px-6 py-4 border-b border-slate-200 dark:border-slate-800 bg-white/70 dark:bg-slate-900/70 backdrop-blur-md gap-3">
+                <div class="flex items-center gap-2.5">
+                    <span class="w-2.5 h-2.5 rounded-full bg-purple-500 radar-pulse shadow-md shadow-purple-500/80"></span>
+                    <h3 class="text-base font-bold text-slate-900 dark:text-white tracking-wide font-mono truncate max-w-[200px] sm:max-w-sm" id="modal-title">SANDBOX_ENVIRONMENT</h3>
                 </div>
-                <div class="flex items-center gap-2">
-                    <button id="zoom-modal" onclick="toggleModalSize()" class="text-slate-300 hover:text-white bg-slate-900 hover:bg-slate-800 font-bold rounded-lg text-xs px-3 py-1.5 border border-sky-950/60 transition-all flex items-center gap-1">
+                <div class="flex items-center gap-2.5">
+                    <button id="zoom-modal" onclick="toggleModalSize()" class="text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 font-bold rounded-xl text-xs px-4 py-2 border border-slate-300 dark:border-slate-700 transition-all flex items-center gap-1.5">
                         <span id="zoom-icon">🔳</span> <span id="zoom-text">全屏</span>
                     </button>
-                    <a id="external-link" href="#" target="_blank" class="text-sky-400 hover:text-sky-300 bg-sky-950/40 hover:bg-sky-900/60 border border-sky-800/30 font-bold rounded-lg text-xs px-3 py-1.5 transition-all flex items-center gap-1">
+                    <a id="external-link" href="#" target="_blank" class="text-sky-700 dark:text-sky-400 hover:text-sky-800 bg-sky-50 dark:bg-sky-950/50 hover:bg-sky-100 border border-sky-300 dark:border-sky-800 font-bold rounded-xl text-xs px-4 py-2 transition-all flex items-center gap-1.5">
                         浏览器查看
                     </a>
-                    <button id="close-modal" class="text-rose-400 hover:text-white bg-slate-900 hover:bg-rose-950/60 font-bold rounded-lg text-xs px-3 py-1.5 border border-rose-950/40 transition-all">
+                    <button id="close-modal" class="text-rose-600 dark:text-rose-400 hover:text-white bg-rose-50 dark:bg-rose-950/50 hover:bg-rose-600 font-bold rounded-xl text-xs px-4 py-2 border border-rose-300 dark:border-rose-800 hover:border-rose-600 transition-all">
                         ✕ 关闭
                     </button>
                 </div>
             </div>
-            <div class="flex-grow bg-slate-950 relative">
-                <div class="absolute inset-0 flex items-center justify-center text-slate-600 text-xs font-mono gap-2 pointer-events-none">
-                    <svg class="animate-spin h-4 w-4 text-sky-500" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+            <div class="flex-grow bg-slate-50 dark:bg-slate-950 relative">
+                <div class="absolute inset-0 flex items-center justify-center text-slate-400 dark:text-slate-600 text-sm font-mono gap-2 pointer-events-none">
+                    <svg class="animate-spin h-5 w-5 text-sky-500" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
                     CRADLE_SYSTEM LOADING...
                 </div>
                 <iframe id="preview-iframe" src="" class="w-full h-full border-none relative z-10"></iframe>
@@ -243,41 +292,38 @@
         </div>
     </div>
 
-    <!-- 使用说明弹窗（已移除图片上传功能） -->
-    <div id="guide-overlay" class="fixed inset-0 bg-slate-950/95 z-[60] hidden flex items-center justify-center p-4 transition-all">
-        <div class="bg-[#0b132b] border border-sky-500/40 rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] flex flex-col overflow-hidden modal-anime">
-            <!-- 标题栏 -->
-            <div class="flex justify-between items-center px-5 py-4 border-b border-sky-950/60 bg-slate-950/50">
-                <div class="flex items-center gap-2">
-                    <span class="text-xl">📖</span>
-                    <h3 class="text-base font-bold text-white font-mono" id="guide-title">使用说明书</h3>
+    <!-- 使用说明弹窗 -->
+    <div id="guide-overlay" class="fixed inset-0 bg-slate-900/40 dark:bg-black/60 backdrop-blur-md z-[60] hidden flex items-center justify-center p-4 transition-all">
+        <div class="bg-white/95 dark:bg-slate-900/95 border border-white/80 dark:border-slate-800 rounded-3xl shadow-2xl w-full max-w-4xl max-h-[90vh] flex flex-col overflow-hidden modal-anime">
+            <div class="flex justify-between items-center px-6 py-4 border-b border-slate-200 dark:border-slate-800 bg-slate-50/80 dark:bg-slate-900/80">
+                <div class="flex items-center gap-2.5">
+                    <span class="text-2xl">📖</span>
+                    <h3 class="text-lg font-bold text-slate-900 dark:text-white font-mono" id="guide-title">使用说明书</h3>
                 </div>
-                <button onclick="closeGuideModal()" class="text-slate-400 hover:text-white bg-slate-900 hover:bg-slate-800 rounded-lg p-1.5 transition-all">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                <button onclick="closeGuideModal()" class="text-slate-500 hover:text-slate-900 dark:hover:text-white bg-slate-200/80 dark:bg-slate-800 rounded-xl p-2 transition-all">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/></svg>
                 </button>
             </div>
             
-            <!-- 内容区 -->
-            <div id="guide-content-area" class="flex-1 overflow-y-auto p-6 text-slate-200 text-sm leading-relaxed guide-content space-y-3">
-                <p class="text-slate-500 italic">暂无使用说明</p>
+            <div id="guide-content-area" class="flex-1 overflow-y-auto p-8 text-slate-700 dark:text-slate-300 text-base leading-relaxed guide-content space-y-4">
+                <p class="text-slate-400 italic">暂无使用说明</p>
             </div>
             
-            <!-- 管理员编辑区（仅文本编辑器，无图片上传） -->
-            <div id="adminGuideEditor" class="hidden border-t border-purple-500/30 bg-slate-950/90 p-5 space-y-3">
-                <div class="flex items-center gap-2 text-purple-300 text-xs font-mono">
-                    <span class="w-2 h-2 bg-purple-500 rounded-full radar-pulse"></span> 
+            <div id="adminGuideEditor" class="hidden border-t border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/50 p-6 space-y-4">
+                <div class="flex items-center gap-2 text-purple-600 dark:text-purple-400 text-xs font-mono font-bold">
+                    <span class="w-2 h-2 bg-purple-600 rounded-full radar-pulse"></span> 
                     管理员编辑模式 · 支持HTML图文
                 </div>
                 
                 <textarea id="guideEditorTextarea" rows="6" 
-                    class="w-full bg-slate-900 border border-purple-800 text-slate-200 rounded-lg p-3 text-sm font-mono focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500/50" 
-                    placeholder="支持HTML：&lt;p&gt;说明文字&lt;/p&gt;&lt;img src='https://...' alt='截图'&gt;&lt;h3&gt;步骤&lt;/h3&gt;&lt;ol&gt;&lt;li&gt;第一步&lt;/li&gt;&lt;/ol&gt;"></textarea>
+                    class="w-full bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white rounded-xl p-4 text-sm font-mono focus:outline-none focus:border-purple-600 focus:ring-2 focus:ring-purple-500/20" 
+                    placeholder="支持HTML标签..."></textarea>
                 
                 <div class="flex justify-between items-center">
-                    <p class="text-slate-600 text-[10px]">💡 可使用 &lt;h3&gt;、&lt;p&gt;、&lt;img&gt;、&lt;ul&gt; 等标签</p>
-                    <div class="flex gap-2">
-                        <button onclick="previewGuide()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs px-3 py-2 rounded-lg font-semibold transition-all border border-slate-700">👁️ 预览</button>
-                        <button onclick="saveGuideForCurrentTool()" class="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white text-xs px-4 py-2 rounded-lg font-bold shadow-lg transition-all">
+                    <p class="text-slate-500 text-xs">💡 可使用 &lt;h3&gt;、&lt;p&gt;、&lt;img&gt;、&lt;ul&gt; 等标签</p>
+                    <div class="flex gap-3">
+                        <button onclick="previewGuide()" class="bg-slate-200 dark:bg-slate-800 hover:bg-slate-300 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 text-xs px-4 py-2.5 rounded-xl font-bold transition-all border border-slate-300 dark:border-slate-700">👁️ 预览</button>
+                        <button onclick="saveGuideForCurrentTool()" class="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white text-xs px-5 py-2.5 rounded-xl font-bold shadow-md transition-all">
                             💾 保存说明
                         </button>
                     </div>
@@ -287,53 +333,72 @@
     </div>
 
     <!-- 管理员控制面板 -->
-    <div id="admin-overlay" class="fixed inset-0 bg-slate-950/90 z-50 hidden flex items-center justify-center p-4">
-        <div class="bg-[#0b132b] border border-purple-500/30 rounded-2xl shadow-2xl w-full max-w-lg p-6 modal-anime">
-            <div class="flex justify-between items-center mb-5 border-b border-purple-950/60 pb-3">
-                <h3 class="text-base font-bold text-white flex items-center gap-2 font-mono">🛠️ CORE_DATAPACK_DEPLOY</h3>
-                <button onclick="toggleAdminPanel(false)" class="text-slate-400 hover:text-white text-sm">✕</button>
+    <div id="admin-overlay" class="fixed inset-0 bg-slate-900/40 dark:bg-black/60 backdrop-blur-md z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white/95 dark:bg-slate-900/95 border border-white/80 dark:border-slate-800 rounded-3xl shadow-2xl w-full max-w-xl p-8 modal-anime">
+            <div class="flex justify-between items-center mb-6 border-b border-slate-200 dark:border-slate-800 pb-4">
+                <h3 class="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2 font-mono">🛠️ CORE_DATAPACK_DEPLOY</h3>
+                <button onclick="toggleAdminPanel(false)" class="text-slate-400 hover:text-slate-900 dark:hover:text-white text-lg font-bold">✕</button>
             </div>
             
-            <form id="toolForm" onsubmit="handleUpload(event)" class="space-y-4">
+            <form id="toolForm" onsubmit="handleUpload(event)" class="space-y-5">
                 <div>
-                    <label class="block text-xs font-bold text-slate-400 mb-1 font-mono">元件分流协议</label>
-                    <select id="toolType" onchange="adaptFormType()" class="w-full bg-slate-950 border border-purple-950 text-slate-200 rounded-lg p-2.5 text-sm focus:outline-none focus:border-purple-500">
+                    <label class="block text-xs font-bold text-slate-600 dark:text-slate-400 mb-1.5 font-mono">元件分流协议</label>
+                    <select id="toolType" onchange="adaptFormType()" class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white rounded-xl p-3 text-sm focus:outline-none focus:border-purple-600">
                         <option value="html">Web 在线网页版 (填写URL链接)</option>
                         <option value="exe">.exe 桌面端软件 (填写下载链接)</option>
                     </select>
                 </div>
                 <div>
-                    <label class="block text-xs font-bold text-slate-400 mb-1 font-mono">元件别称 *</label>
-                    <input type="text" id="toolName" required placeholder="如：系统大屏协同终端" class="w-full bg-slate-950 border border-purple-950 text-slate-200 rounded-lg p-2.5 text-sm focus:outline-none focus:border-purple-500">
+                    <label class="block text-xs font-bold text-slate-600 dark:text-slate-400 mb-1.5 font-mono">元件别称 *</label>
+                    <input type="text" id="toolName" required placeholder="如：系统大屏协同终端" class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white rounded-xl p-3 text-sm focus:outline-none focus:border-purple-600">
                 </div>
                 <div>
-                    <label class="block text-xs font-bold text-slate-400 mb-1 font-mono">描述指令 *</label>
-                    <textarea id="toolDesc" required rows="2" placeholder="简要阐述核心用途..." class="w-full bg-slate-950 border border-purple-950 text-slate-200 rounded-lg p-2.5 text-sm focus:outline-none focus:border-purple-500"></textarea>
+                    <label class="block text-xs font-bold text-slate-600 dark:text-slate-400 mb-1.5 font-mono">描述指令 *</label>
+                    <textarea id="toolDesc" required rows="2" placeholder="简要阐述核心用途..." class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white rounded-xl p-3 text-sm focus:outline-none focus:border-purple-600"></textarea>
                 </div>
                 <div id="urlInputContainer">
-                    <label id="urlLabel" class="block text-xs font-bold text-slate-400 mb-1 font-mono">分发地址链路 *</label>
-                    <input type="text" id="toolUrl" placeholder="https://..." class="w-full bg-slate-950 border border-purple-950 text-slate-200 rounded-lg p-2.5 text-sm focus:outline-none focus:border-purple-500">
+                    <label id="urlLabel" class="block text-xs font-bold text-slate-600 dark:text-slate-400 mb-1.5 font-mono">分发地址链路 *</label>
+                    <input type="text" id="toolUrl" placeholder="https://..." class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white rounded-xl p-3 text-sm focus:outline-none focus:border-purple-600">
                 </div>
                 <div>
-                    <label class="block text-xs font-bold text-slate-400 mb-1 font-mono">归类技术标签 (用逗号隔开)</label>
-                    <input type="text" id="toolTags" placeholder="效率, 数字化" class="w-full bg-slate-950 border border-purple-950 text-slate-200 rounded-lg p-2.5 text-sm focus:outline-none focus:border-purple-500">
+                    <label class="block text-xs font-bold text-slate-600 dark:text-slate-400 mb-1.5 font-mono">归类技术标签 (用逗号隔开)</label>
+                    <input type="text" id="toolTags" placeholder="效率, 数字化" class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white rounded-xl p-3 text-sm focus:outline-none focus:border-purple-600">
                 </div>
-                <div class="pt-2 flex flex-wrap justify-end gap-2 border-t border-purple-950/60 pt-4">
-                    <button type="button" onclick="logoutAdmin()" class="bg-rose-950/40 text-rose-400 hover:bg-rose-900 border border-rose-950 text-xs px-2.5 py-2 rounded-lg font-semibold mr-auto">管理员账号退出</button>
-                    <button type="button" onclick="exportNewJson()" class="bg-emerald-950/40 text-emerald-400 hover:bg-emerald-900 border border-emerald-950 text-xs px-3 py-2 rounded-lg font-bold shadow-md">📦 导出新配置</button>
-                    <button type="button" onclick="resetFormToDefault()" class="bg-slate-900 hover:bg-slate-800 text-slate-400 text-xs px-3 py-2 rounded-lg font-semibold">重置初版</button>
-                    <button type="submit" class="bg-gradient-to-r from-purple-600 to-indigo-600 text-white text-xs px-4 py-2 rounded-lg font-bold shadow-md active:scale-95 transition-all">上架工具</button>
+                <div class="pt-3 flex flex-wrap justify-end gap-3 border-t border-slate-200 dark:border-slate-800">
+                    <button type="button" onclick="logoutAdmin()" class="bg-rose-50 dark:bg-rose-950/40 text-rose-600 dark:text-rose-400 hover:bg-rose-100 border border-rose-300 dark:border-rose-800 text-xs px-3.5 py-2.5 rounded-xl font-bold mr-auto">管理员账号退出</button>
+                    <button type="button" onclick="exportNewJson()" class="bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 hover:bg-emerald-100 border border-emerald-300 dark:border-emerald-800 text-xs px-4 py-2.5 rounded-xl font-bold shadow-sm">📦 导出新配置</button>
+                    <button type="button" onclick="resetFormToDefault()" class="bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 text-xs px-4 py-2.5 rounded-xl font-bold border border-slate-300 dark:border-slate-700">重置初版</button>
+                    <button type="submit" class="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white text-xs px-5 py-2.5 rounded-xl font-bold shadow-md active:scale-95 transition-all">上架工具</button>
                 </div>
             </form>
         </div>
     </div>
 
     <script>
-        const ADMIN_PASSWORD = "Lyt12345";
+        const ADMIN_PASSWORD = "L";
         let isAdmin = false;
         let currentGuideToolId = null;
 
-        // 默认工具数据，guide 字段全部置空
+        // --- 深色模式管理 ---
+        function initTheme() {
+            const savedTheme = localStorage.getItem('theme');
+            const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+            
+            if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
+                document.documentElement.classList.add('dark');
+                document.getElementById('themeIcon').innerText = '☀️';
+            } else {
+                document.documentElement.classList.remove('dark');
+                document.getElementById('themeIcon').innerText = '🌙';
+            }
+        }
+
+        function toggleDarkMode() {
+            const isDark = document.documentElement.classList.toggle('dark');
+            localStorage.setItem('theme', isDark ? 'dark' : 'light');
+            document.getElementById('themeIcon').innerText = isDark ? '☀️' : '🌙';
+        }
+
         const defaultTools = [
             { 
                 id: 1, 
@@ -413,12 +478,12 @@
         }
 
         async function initData() {
+            initTheme();
             checkAdminSession();
             try {
                 const response = await fetch('./tools.json');
                 if (!response.ok) throw new Error('网络元件文件读取失败');
                 toolsData = await response.json();
-                // 确保每个工具都有 guide 字段
                 toolsData.forEach(tool => { if (!tool.guide) tool.guide = ''; });
             } catch (error) {
                 console.warn("未检索到线上 tools.json，正启用本地存储或默认拓扑:", error);
@@ -544,7 +609,7 @@
             guideTitle.innerText = `${tool.name} · 使用说明`;
             guideContentArea.innerHTML = tool.guide && tool.guide.trim() !== ''
                 ? tool.guide
-                : '<div class="text-center py-12 text-slate-500"><p class="text-lg mb-2">📭</p><p class="italic">暂无详细说明</p><p class="text-xs mt-2 text-slate-600">待编辑</p></div>';
+                : '<div class="text-center py-12 text-slate-400 dark:text-slate-500"><p class="text-2xl mb-2">📭</p><p class="italic">暂无详细说明</p></div>';
 
             if (isAdmin) {
                 adminGuideEditor.classList.remove('hidden');
@@ -565,7 +630,7 @@
 
         function previewGuide() {
             if (currentGuideToolId) {
-                guideContentArea.innerHTML = guideEditorTextarea.value || '<p class="text-slate-500 italic">预览为空</p>';
+                guideContentArea.innerHTML = guideEditorTextarea.value || '<p class="text-slate-400 italic">预览为空</p>';
             }
         }
 
@@ -575,7 +640,7 @@
             if (tool) {
                 tool.guide = guideEditorTextarea.value;
                 syncToLocalStorage();
-                guideContentArea.innerHTML = tool.guide || '<p class="text-slate-500 italic">暂无详细说明。</p>';
+                guideContentArea.innerHTML = tool.guide || '<p class="text-slate-400 italic">暂无详细说明。</p>';
                 alert("✅ 使用说明已保存成功！");
             }
         }
@@ -593,13 +658,13 @@
             const zText = document.getElementById('zoom-text');
             isModalMaximized = !isModalMaximized;
             if (isModalMaximized) {
-                modalContainer.classList.remove('max-w-6xl', 'h-[85vh]');
+                modalContainer.classList.remove('max-w-7xl', 'h-[88vh]');
                 modalContainer.classList.add('max-w-full', 'h-screen', 'rounded-none');
                 zIcon.innerText = "💠";
                 zText.innerText = "视窗复原";
             } else {
                 modalContainer.classList.remove('max-w-full', 'h-screen', 'rounded-none');
-                modalContainer.classList.add('max-w-6xl', 'h-[85vh]');
+                modalContainer.classList.add('max-w-7xl', 'h-[88vh]');
                 zIcon.innerText = "🔳";
                 zText.innerText = "全屏";
             }
@@ -627,7 +692,7 @@
 
         function getActiveFilterType() {
             if (isFavViewActive) return 'favorite';
-            const active = document.querySelector('.filter-btn.bg-sky-500');
+            const active = document.querySelector('.filter-btn.bg-white, .filter-btn.dark\\:bg-slate-800');
             return active ? active.dataset.type : 'all';
         }
 
@@ -651,53 +716,53 @@
             totalCount.innerText = toolsData.length < 10 ? `0${toolsData.length}` : toolsData.length;
 
             if (filteredData.length === 0) {
-                grid.innerHTML = `<div class="col-span-full text-center py-20 text-slate-600 font-mono text-xs tracking-wider">NO_MATCHED_COMPONENTS // 无匹配项</div>`;
+                grid.innerHTML = `<div class="col-span-full text-center py-24 text-slate-500 dark:text-slate-400 font-mono text-sm tracking-wider">NO_MATCHED_COMPONENTS // 无匹配工具</div>`;
                 return;
             }
 
             grid.innerHTML = filteredData.map(item => `
-                <div class="modern-card p-[1px] group relative">
-                    <div class="card-inner p-5 flex flex-col justify-between relative">
+                <div class="modern-card p-[1px] group relative" onmousemove="handleCardMouseMove(event, this)">
+                    <div class="card-inner p-6 flex flex-col justify-between relative">
                         ${isAdmin ? `
-                            <button onclick="deleteTool(${item.id})" class="absolute top-2 right-2 opacity-0 group-hover:opacity-100 bg-slate-950/90 hover:bg-rose-950 text-slate-500 hover:text-rose-400 transition-all px-2 py-0.5 text-[9px] font-mono rounded border border-rose-950/60 z-20" title="擦除此元件">✕ WIPE</button>
+                            <button onclick="deleteTool(${item.id})" class="absolute top-3 right-3 opacity-0 group-hover:opacity-100 bg-white dark:bg-slate-800 hover:bg-rose-100 dark:hover:bg-rose-900/50 text-slate-600 dark:text-slate-300 hover:text-rose-600 dark:hover:text-rose-400 border border-slate-300 dark:border-slate-700 transition-all px-2.5 py-1 text-xs font-mono rounded-lg z-20 shadow-sm" title="擦除此元件">✕ WIPE</button>
                         ` : ''}
                         
                         <div>
-                            <div class="flex flex-col sm:flex-row sm:items-start justify-between gap-3 mb-3.5 ${isAdmin ? 'pr-12' : ''}">
-                                <h3 class="text-base font-bold text-slate-100 tracking-tight font-sans">${item.name}</h3>
+                            <div class="flex flex-col sm:flex-row sm:items-start justify-between gap-3 mb-4 ${isAdmin ? 'pr-12' : ''}">
+                                <h3 class="text-lg font-bold text-slate-900 dark:text-white tracking-tight font-sans">${item.name}</h3>
                                 <div class="flex flex-wrap gap-1.5 shrink-0 sm:justify-end">
                                     ${item.tags.map(tag => {
-                                        const glowClass = (item.type === 'exe') ? 'cyber-tag-blue' : 'cyber-tag-purple';
-                                        return `<span class="${glowClass} text-[9px] px-2 py-0.5 rounded font-mono tracking-wide transition-all duration-300 uppercase">${tag}</span>`;
+                                        const tagClass = (item.type === 'exe') ? 'tag-exe' : 'tag-web';
+                                        return `<span class="${tagClass} text-[10px] px-2.5 py-0.5 rounded-md font-mono font-bold tracking-wide transition-all uppercase">${tag}</span>`;
                                     }).join('')}
                                 </div>
                             </div>
-                            <div class="text-slate-400 text-xs leading-relaxed mb-6 font-light">${item.desc}</div>
+                            <div class="text-slate-600 dark:text-slate-400 text-sm leading-relaxed mb-8 font-normal">${item.desc}</div>
                         </div>
                         
-                        <div class="flex items-center justify-between pt-4 border-t border-sky-950/40">
+                        <div class="flex items-center justify-between pt-5 border-t border-slate-300/40 dark:border-slate-800/80">
                             <div class="flex items-center gap-2">
-                                <button onclick="toggleFavorite(${item.id})" class="favorite-btn p-1.5 bg-slate-950/80 hover:bg-slate-900 rounded-lg border border-sky-950/40 transition-all focus:outline-none" data-id="${item.id}">
-                                    <svg class="w-4 h-4 transition-all duration-200 ${item.favorite ? 'text-rose-500 fill-rose-500 scale-110' : 'text-slate-500 hover:text-rose-400'}" viewBox="0 0 24 24" fill="${item.favorite ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2.5">
+                                <button onclick="toggleFavorite(${item.id})" class="favorite-btn p-2 bg-white/70 dark:bg-slate-800/70 hover:bg-white dark:hover:bg-slate-800 rounded-xl border border-white/80 dark:border-slate-700/60 transition-all shadow-sm focus:outline-none" data-id="${item.id}">
+                                    <svg class="w-4 h-4 transition-all duration-200 ${item.favorite ? 'text-rose-500 fill-rose-500 scale-110' : 'text-slate-400 dark:text-slate-500 hover:text-rose-500'}" viewBox="0 0 24 24" fill="${item.favorite ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2.5">
                                         <path stroke-linecap="round" stroke-linejoin="round" d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
                                     </svg>
                                 </button>
-                                <span class="px-2 py-0.5 text-[9px] font-black font-mono rounded ${item.type === 'exe' ? 'bg-sky-500/10 text-sky-400 border border-sky-500/20 shadow-[0_0_10px_rgba(56,189,248,0.1)]' : 'bg-purple-500/10 text-purple-400 border border-purple-500/20 shadow-[0_0_10px_rgba(168,85,247,0.1)]'}">${item.type === 'exe' ? 'EXE' : 'WEB'}</span>
+                                <span class="px-2.5 py-1 text-[10px] font-bold font-mono rounded-lg bg-white/70 dark:bg-slate-800/70 text-slate-700 dark:text-slate-300 border border-white/80 dark:border-slate-700/60 shadow-sm">${item.type === 'exe' ? 'EXE' : 'WEB'}</span>
                                 
                                 <button onclick="openGuideModal(${item.id})" 
-                                    class="p-1.5 bg-slate-950/80 hover:bg-sky-950/60 rounded-lg border border-sky-950/40 transition-all group/guide"
+                                    class="p-2 bg-white/70 dark:bg-slate-800/70 hover:bg-sky-50 dark:hover:bg-slate-700 rounded-xl border border-white/80 dark:border-slate-700/60 hover:border-sky-300 transition-all shadow-sm group/guide"
                                     title="查看使用说明">
-                                    <svg class="w-4 h-4 text-slate-500 group-hover/guide:text-sky-400 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                    <svg class="w-4 h-4 text-slate-500 dark:text-slate-400 group-hover/guide:text-sky-600 dark:group-hover/guide:text-sky-400 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                                     </svg>
                                 </button>
                             </div>
                             
                             <div>
                                 ${item.type === 'exe' ? `
-                                    <a href="${item.url}" onclick="if(this.getAttribute('href')==='#'){alert('请管理员上传配置本卡片的真实软件下载直链！');return false;}" class="inline-block bg-gradient-to-r from-sky-400 to-blue-500 text-slate-950 text-xs font-bold px-4 py-1.5 rounded-xl hover:from-white hover:to-white shadow-lg shadow-sky-500/10 active:scale-95 transition-all duration-300">下载软件</a>
+                                    <a href="${item.url}" onclick="if(this.getAttribute('href')==='#'){alert('请管理员上传配置本卡片的真实软件下载直链！');return false;}" class="inline-block bg-slate-900 dark:bg-sky-500 hover:bg-slate-800 dark:hover:bg-sky-400 text-white dark:text-slate-950 text-xs font-bold px-5 py-2 rounded-xl shadow-md active:scale-95 transition-all duration-300">下载软件</a>
                                 ` : `
-                                    <button onclick="openModal('${item.name}', '${item.url}')" class="bg-slate-900 hover:bg-slate-800 text-sky-400 text-xs font-bold px-4 py-1.5 rounded-xl border border-sky-500/30 shadow-md active:scale-95 transition-all duration-300">在线使用</button>
+                                    <button onclick="openModal('${item.name}', '${item.url}')" class="bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-100 text-xs font-bold px-5 py-2 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm active:scale-95 transition-all duration-300">在线使用</button>
                                 `}
                             </div>
                         </div>
@@ -706,18 +771,30 @@
             `).join('');
         }
 
-        // 事件监听
+        // --- 计算微光斑的鼠标相对坐标 ---
+        function handleCardMouseMove(e, card) {
+            const rect = card.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            card.style.setProperty('--mouse-x', `${x}px`);
+            card.style.setProperty('--mouse-y', `${y}px`);
+        }
+
+        // --- 事件监听 ---
         favToggle.addEventListener('click', function () {
             isFavViewActive = !isFavViewActive;
+            const activeBtnClass = "filter-btn shrink-0 bg-white dark:bg-slate-800 text-slate-900 dark:text-white shadow-sm px-4 py-1.5 rounded-lg text-xs font-bold transition-all";
+            const normalBtnClass = "filter-btn shrink-0 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white px-4 py-1.5 rounded-lg text-xs font-bold transition-all";
+            
             if (isFavViewActive) {
                 favToggleText.innerText = '返回全部';
                 favToggleIcon.classList.add('text-rose-500', 'fill-rose-500/20', 'rotate-180');
-                filterBtns.forEach(b => b.className = "filter-btn shrink-0 text-slate-400 hover:text-slate-200 px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all");
+                filterBtns.forEach(b => b.className = normalBtnClass);
                 renderTools('favorite', searchInput.value);
             } else {
                 favToggleText.innerText = '查看收藏';
                 favToggleIcon.classList.remove('text-rose-500', 'fill-rose-500/20', 'rotate-180');
-                document.querySelector('.filter-btn[data-type="all"]').className = "filter-btn shrink-0 bg-sky-500 text-slate-950 px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all shadow-md shadow-sky-500/20";
+                document.querySelector('.filter-btn[data-type="all"]').className = activeBtnClass;
                 renderTools('all', searchInput.value);
             }
         });
@@ -727,8 +804,8 @@
                 isFavViewActive = false;
                 favToggleText.innerText = '查看收藏';
                 favToggleIcon.classList.remove('text-rose-500', 'fill-rose-500/20', 'rotate-180');
-                filterBtns.forEach(b => b.className = "filter-btn shrink-0 text-slate-400 hover:text-slate-200 px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all");
-                this.className = "filter-btn shrink-0 bg-sky-500 text-slate-950 px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all shadow-md shadow-sky-500/20";
+                filterBtns.forEach(b => b.className = "filter-btn shrink-0 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white px-4 py-1.5 rounded-lg text-xs font-bold transition-all");
+                this.className = "filter-btn shrink-0 bg-white dark:bg-slate-800 text-slate-900 dark:text-white shadow-sm px-4 py-1.5 rounded-lg text-xs font-bold transition-all";
                 renderTools(this.dataset.type, searchInput.value);
             });
         });
@@ -752,6 +829,8 @@
         });
 
         // 暴露全局函数
+        window.toggleDarkMode = toggleDarkMode;
+        window.handleCardMouseMove = handleCardMouseMove;
         window.triggerAdminLogin = triggerAdminLogin;
         window.toggleAdminPanel = toggleAdminPanel;
         window.logoutAdmin = logoutAdmin;
