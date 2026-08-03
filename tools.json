@@ -65,6 +65,19 @@
       "url": "https://raw.githubusercontent.com/zounvshi/tools/main/exe/文字识别工具.exe",
       "guide": "1.双击运行。\n2.右键在设置中重置快捷键",
       "favorite": false
+    },
+    {
+      "id": 1785723805556,
+      "name": "ScreenToGif",
+      "desc": " 一款轻量免费、操作极简的录屏及摄像头录制工具，能快速将屏幕操作或摄像头画面保存为高清 GIF 动画或视频，并内置强大的逐帧编辑功能。",
+      "type": "exe",
+      "tags": [
+        "录屏软件",
+        "GIF制作"
+      ],
+      "url": "https://github.com/zounvshi/tools/releases/download/v1.0.0/ScreenToGif.zip",
+      "guide": "开箱即用",
+      "favorite": false
     }
   ]
 }
