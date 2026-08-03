@@ -425,7 +425,9 @@
     </div>
 
     <script>
-        const ADMIN_PASSWORD = "Litt";
+        // ===== 已删除前端硬编码密码 =====
+        // const ADMIN_PASSWORD = "L";  // 已移除，密码由后端验证
+        
         let isAdmin = false;
         let currentGuideToolId = null;
 
@@ -523,16 +525,34 @@
             }
         }
 
-        function triggerAdminLogin() {
+        // ========== 修改后的 triggerAdminLogin（调用后端 API） ==========
+        async function triggerAdminLogin() {
             const pass = prompt("验证核心内网管理员密匙：");
-            if (pass === ADMIN_PASSWORD) {
-                isAdmin = true;
-                sessionStorage.setItem('isAdminActive', 'true');
-                document.getElementById('adminPanelBtn').classList.remove('hidden');
-                alert("内网凭证已激活！");
-                renderTools(getActiveFilterType(), searchInput.value);
-            } else if (pass !== null) {
-                alert("校验失败，终端已锁定保护！");
+            if (pass === null) return; // 用户点了“取消”
+
+            try {
+                const response = await fetch('/api/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ password: pass })
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.success) {
+                        isAdmin = true;
+                        sessionStorage.setItem('isAdminActive', 'true');
+                        document.getElementById('adminPanelBtn').classList.remove('hidden');
+                        alert("内网凭证已激活！");
+                        renderTools(getActiveFilterType(), searchInput.value);
+                    } else {
+                        alert("校验失败，终端已锁定保护！");
+                    }
+                } else {
+                    alert("校验失败，终端已锁定保护！");
+                }
+            } catch (error) {
+                alert("网络错误，请确保已部署到 Cloudflare Pages 并重试");
             }
         }
 
