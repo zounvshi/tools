@@ -216,7 +216,7 @@
             color: #38bdf8;
         }
 
-        /* ===== 工具图标占位 ===== */
+        /* ===== 工具图标 ===== */
         .tool-icon {
             width: 48px;
             height: 48px;
@@ -247,39 +247,22 @@
             object-fit: cover;
         }
 
-        /* 作者标签 */
-        .author-tag {
-            font-size: 0.7rem;
+        /* ===== 作者样式：灰色小字，无外框 ===== */
+        .tool-author {
+            font-size: 0.75rem;
             color: #94a3b8;
-            display: inline-flex;
-            align-items: center;
-            gap: 0.25rem;
-            font-weight: 500;
+            font-weight: 400;
             letter-spacing: 0.02em;
-            background: rgba(148, 163, 184, 0.12);
-            padding: 0.15rem 0.7rem 0.15rem 0.5rem;
-            border-radius: 99px;
-            border: 1px solid rgba(148, 163, 184, 0.15);
-            transition: background 0.2s;
+            margin-top: 0.1rem;
         }
-        .dark .author-tag {
+        .dark .tool-author {
             color: #64748b;
-            background: rgba(100, 116, 139, 0.12);
-            border-color: rgba(100, 116, 139, 0.15);
         }
-        .author-tag .at-symbol {
-            font-weight: 700;
-            color: #38bdf8;
+        .tool-author .at-symbol {
+            color: #94a3b8;
         }
-        .dark .author-tag .at-symbol {
-            color: #38bdf8;
-        }
-        .author-tag .author-name {
-            font-weight: 600;
-            color: #475569;
-        }
-        .dark .author-tag .author-name {
-            color: #cbd5e1;
+        .dark .tool-author .at-symbol {
+            color: #64748b;
         }
     </style>
 </head>
@@ -506,18 +489,18 @@
                     <textarea id="toolDesc" required rows="2" placeholder="简要阐述核心用途..." class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white rounded-xl p-3 text-sm focus:outline-none focus:border-purple-600"></textarea>
                 </div>
 
-                <!-- ===== 新增：图标 URL ===== -->
+                <!-- 图标 URL -->
                 <div>
                     <label class="block text-xs font-bold text-slate-600 dark:text-slate-400 mb-1.5 font-mono">🖼️ 工具图标 (图片URL，可选)</label>
                     <input type="text" id="toolIcon" placeholder="https://example.com/icon.png 或留空使用首字母" class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white rounded-xl p-3 text-sm focus:outline-none focus:border-purple-600">
                     <p class="text-[10px] text-slate-400 mt-1">建议 128×128 方形 PNG，留空则自动显示工具名首字母</p>
                 </div>
 
-                <!-- ===== 新增：作者 ===== -->
+                <!-- 作者 -->
                 <div>
                     <label class="block text-xs font-bold text-slate-600 dark:text-slate-400 mb-1.5 font-mono">✍️ 作者 (用 @ 加名字，如 @张三)</label>
                     <input type="text" id="toolAuthor" placeholder="@张三" class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white rounded-xl p-3 text-sm focus:outline-none focus:border-purple-600">
-                    <p class="text-[10px] text-slate-400 mt-1">会以 @作者名 格式展示在卡片上</p>
+                    <p class="text-[10px] text-slate-400 mt-1">会以 @作者名 格式展示在工具名称下方</p>
                 </div>
 
                 <!-- URL -->
@@ -580,7 +563,7 @@
             document.getElementById('themeIcon').innerText = isDark ? '☀️' : '🌙';
         }
 
-        // ===== 默认工具数据（新增 icon / author） =====
+        // ===== 默认工具数据 =====
         const defaultTools = [{
             id: 1,
             name: "MouseFX",
@@ -696,7 +679,6 @@
                     toolsData = jsonContent.tools || [];
                     if (jsonContent.about) aboutContent = jsonContent.about;
                 }
-                // 为旧数据补全 icon / author
                 toolsData.forEach(tool => {
                     if (!tool.guide) tool.guide = '';
                     if (!tool.icon) tool.icon = '';
@@ -763,7 +745,7 @@
             }
         }
 
-        // ===== 上架工具（新增 icon / author） =====
+        // ===== 上架工具 =====
         function handleUpload(e) {
             e.preventDefault();
             if (!isAdmin) return;
@@ -802,7 +784,7 @@
             renderTools(getActiveFilterType(), searchInput.value);
         }
 
-        // ===== 导出配置（含 icon / author） =====
+        // ===== 导出配置 =====
         function exportNewJson() {
             const cleanTools = toolsData.map(({ favorite, ...rest }) => ({ ...rest, favorite: false }));
             const exportObject = {
@@ -968,7 +950,7 @@
             return active ? active.dataset.type : 'all';
         }
 
-        // ===== 渲染卡片（新增 icon / author） =====
+        // ===== 渲染卡片（标签在右上角，作者在名称下方灰色小字） =====
         function renderTools(filterType = 'all', keyword = '') {
             let filteredData = toolsData;
             if (filterType === 'favorite') {
@@ -995,15 +977,21 @@
             }
 
             grid.innerHTML = filteredData.map(item => {
-                // 处理图标：有 URL 则显示图片，否则显示首字母
+                // 图标
                 const iconHtml = item.icon && item.icon.trim() !== '' ?
                     `<img src="${item.icon}" alt="${item.name}" loading="lazy" onerror="this.style.display='none';this.parentElement.textContent='${item.name.charAt(0).toUpperCase()}'">` :
                     `${item.name.charAt(0).toUpperCase()}`;
 
-                // 处理作者显示
+                // 作者：灰色小字，直接显示在名称下方
                 const authorDisplay = item.author && item.author.trim() !== '' ?
-                    `<span class="author-tag"><span class="at-symbol">@</span><span class="author-name">${item.author.replace(/^@/, '')}</span></span>` :
+                    `<div class="tool-author"><span class="at-symbol">@</span>${item.author.replace(/^@/, '')}</div>` :
                     '';
+
+                // 分类标签：放在右上角
+                const tagHtml = item.tags.map(tag => {
+                    const tagClass = (item.type === 'exe') ? 'tag-exe' : 'tag-web';
+                    return `<span class="${tagClass} text-[10px] px-2.5 py-0.5 rounded-md font-mono font-bold tracking-wide transition-all uppercase">${tag}</span>`;
+                }).join('');
 
                 return `
                         <div class="modern-card p-[1px] group relative" onmousemove="handleCardMouseMove(event, this)">
@@ -1013,25 +1001,22 @@
                                 ` : ''}
 
                                 <div>
-                                    <!-- 标题行：图标 + 名称 + 标签 -->
-                                    <div class="flex items-start gap-4 mb-3 ${isAdmin ? 'pr-12' : ''}">
+                                    <!-- 标签：右上角 -->
+                                    <div class="flex flex-wrap gap-1.5 justify-end mb-3 ${isAdmin ? 'pr-12' : ''}">
+                                        ${tagHtml}
+                                    </div>
+
+                                    <!-- 图标 + 名称 + 作者 -->
+                                    <div class="flex items-start gap-4 mb-3">
                                         <div class="tool-icon">${iconHtml}</div>
                                         <div class="flex-1 min-w-0">
                                             <h3 class="text-lg font-bold text-slate-900 dark:text-white tracking-tight font-sans truncate">${item.name}</h3>
-                                            <div class="flex flex-wrap gap-1.5 mt-1">
-                                                ${item.tags.map(tag => {
-                                                    const tagClass = (item.type === 'exe') ? 'tag-exe' : 'tag-web';
-                                                    return `<span class="${tagClass} text-[10px] px-2.5 py-0.5 rounded-md font-mono font-bold tracking-wide transition-all uppercase">${tag}</span>`;
-                                                }).join('')}
-                                            </div>
+                                            ${authorDisplay}
                                         </div>
                                     </div>
 
                                     <!-- 描述 -->
                                     <div class="text-slate-600 dark:text-slate-400 text-sm leading-relaxed mb-3 font-normal">${item.desc}</div>
-
-                                    <!-- ===== 作者信息 ===== -->
-                                    ${authorDisplay ? `<div class="mb-4">${authorDisplay}</div>` : ''}
                                 </div>
 
                                 <!-- 底部操作栏 -->
