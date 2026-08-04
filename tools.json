@@ -90,6 +90,36 @@
       "icon": "https://raw.githubusercontent.com/zounvshi/tools/main/icon/ScreenToGif.png",
       "author": "@管理员",
       "favorite": false
+    },
+    {
+      "id": 1785822106868,
+      "name": "日志优化助手",
+      "desc": "将每天工作内容优化，并输出工作内容和工作成果2部分内容",
+      "type": "html",
+      "tags": [
+        "办公效率",
+        "内容优化"
+      ],
+      "url": "https://hiagent.hengrui.com/product/llm/chat/d70fnr6lvndc72vq7vrg",
+      "guide": "",
+      "icon": "https://raw.githubusercontent.com/zounvshi/tools/main/icon/日志.png",
+      "author": "@管理员",
+      "favorite": false
+    },
+    {
+      "id": 1785822224947,
+      "name": "周报优化助手",
+      "desc": "优化本周工作内容，并基于内容生成本周工作内容和下周计划",
+      "type": "html",
+      "tags": [
+       "办公效率",
+        "内容优化"
+      ],
+      "url": "https://hiagent.hengrui.com/product/llm/chat/d83bpimlvndc72pmlcv0",
+      "guide": "",
+      "icon": "https://raw.githubusercontent.com/zounvshi/tools/main/icon/周报.png",
+      "author": "@管理员",
+      "favorite": false
     }
   ]
 }
