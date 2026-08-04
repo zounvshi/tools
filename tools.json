@@ -43,7 +43,7 @@
       "url": "https://raw.githubusercontent.com/zounvshi/tools/main/Everything.exe",
       "guide": "1.双击图标打开，在输入框直接敲文件名（例如 工作报告），下方即刻列出结果。\n2.双击打开文件，右键打开所在路径。",
       "icon": "https://raw.githubusercontent.com/zounvshi/tools/main/icon/search.png",
-      "author": "@管理员",
+      "author": "@其他",
       "favorite": false
     },
     {
@@ -73,7 +73,7 @@
       "url": "https://raw.githubusercontent.com/zounvshi/tools/main/exe/文字识别工具.exe",
       "guide": "1.双击运行。\n2.右键在设置中重置快捷键",
       "icon": "https://raw.githubusercontent.com/zounvshi/tools/main/icon/扫描.png",
-      "author": "@管理员",
+      "author": "@其他",
       "favorite": false
     },
     {
@@ -88,7 +88,7 @@
       "url": "https://github.com/zounvshi/tools/releases/download/v1.0.0/ScreenToGif.zip",
       "guide": "开箱即用",
       "icon": "https://raw.githubusercontent.com/zounvshi/tools/main/icon/ScreenToGif.png",
-      "author": "@管理员",
+      "author": "@其他",
       "favorite": false
     },
     {
