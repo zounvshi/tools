@@ -17,21 +17,6 @@
       "favorite": false
     },
     {
-      "id": 2,
-      "name": "法规共享平台",
-      "desc": "专为医药行业打造的数字化合规与政策标准协同查询系统，支持云端高效在线查阅与多方联控。",
-      "type": "html",
-      "tags": [
-        "行业协同",
-        "合规数字化"
-      ],
-      "url": "https://zounvshi.github.io/zhiliang",
-      "guide": "1.打开网页即用",
-      "icon": "/icon/法规.png",
-      "author": "@管理员",
-      "favorite": false
-    },
-    {
       "id": 1785120156331,
       "name": "Everything",
       "desc": "一款针对Windows系统的极速文件/文件夹搜索工具。它的核心优势是“秒级响应”——索引整个硬盘通常只需几秒钟。",
@@ -112,7 +97,7 @@
       "desc": "优化本周工作内容，并基于内容生成本周工作内容和下周计划（因为是公司内网平台，点击在线使用按钮后，请通过 浏览器查看 使用）",
       "type": "html",
       "tags": [
-       "办公效率",
+        "办公效率",
         "内容优化"
       ],
       "url": "https://hiagent.hengrui.com/product/llm/chat/d83bpimlvndc72pmlcv0",
