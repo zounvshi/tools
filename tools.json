@@ -105,6 +105,21 @@
       "icon": "/icon/周报.png",
       "author": "@管理员",
       "favorite": false
+    },
+    {
+      "id": 1789710547709,
+      "name": "合规数字化共享平台",
+      "desc": "从「标准化」到「智能化」一让合规从「人找法规」变为「法规找人」，实现全员主动合规。",
+      "type": "html",
+      "tags": [
+        "合规",
+        "数字化"
+      ],
+      "url": "https://complymap.pages.dev/",
+      "guide": "打开即用",
+      "icon": "/icon/合规.png",
+      "author": "@管理员",
+      "favorite": false
     }
   ]
 }
