@@ -115,7 +115,7 @@
 
         /* ===== 文字链接（使用说明）===== */
         .guide-text-link {
-            color:#0284c7; font-size:.8rem; font-weight:600; text-decoration:underline; text-underline-offset:3px;
+            color:#0284c7; font-size:.8rem; font-weight:600; text-decoration:none;
             background:none; border:none; cursor:pointer; padding:0; transition:color .2s;
         }
         .guide-text-link:hover { color:#0369a1; }
@@ -457,12 +457,20 @@
         const adminAboutEditor = document.getElementById('adminAboutEditor');
         const aboutEditorTextarea = document.getElementById('aboutEditorTextarea');
 
-        // 收藏（本地偏好）
+        // 收藏（本地偏好，存 localStorage）
         function loadFavorites() {
-            const stored = localStorage.getItem('favTools');
-            if (stored) { const ids = JSON.parse(stored); toolsData.forEach(i => i.favorite = ids.includes(i.id)); }
+            try {
+                const stored = localStorage.getItem('favTools');
+                const ids = stored ? JSON.parse(stored) : [];
+                // 统一转字符串比较，避免 id 数字/字符串类型不一致导致匹配失败
+                const set = new Set((Array.isArray(ids) ? ids : []).map(String));
+                toolsData.forEach(i => { i.favorite = set.has(String(i.id)); });
+            } catch (e) { /* 本地收藏数据损坏时忽略，不影响主流程 */ }
         }
-        function saveFavorites() { localStorage.setItem('favTools', JSON.stringify(toolsData.filter(i => i.favorite).map(i => i.id))); }
+        function saveFavorites() {
+            try { localStorage.setItem('favTools', JSON.stringify(toolsData.filter(i => i.favorite).map(i => i.id))); }
+            catch (e) { toast('收藏保存失败：浏览器存储不可用'); }
+        }
 
         // ============ 加载工具（实时，no-store + 兜底静态）============
         async function loadTools() {
@@ -482,6 +490,7 @@
                 } catch (e2) { toolsData = []; toast('数据加载失败，已显示空列表'); }
             }
             if (isAdmin()) await loadPending();
+            loadFavorites();   // 每次拉到数据后都要回填本地收藏，否则刷新后收藏丢失
             hideLoading();
             renderTools();
         }
@@ -562,7 +571,7 @@
                                         <svg class="w-4 h-4 transition-all duration-200 ${item.favorite ? 'text-rose-500 fill-rose-500 scale-110' : 'text-slate-400 dark:text-slate-500 hover:text-rose-500'}" viewBox="0 0 24 24" fill="${item.favorite ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
                                     </button>
                                     <span class="px-2.5 py-1 text-[10px] font-bold font-mono rounded-lg bg-white/70 dark:bg-slate-800/70 text-slate-700 dark:text-slate-300 border border-white/80 dark:border-slate-700/60 shadow-sm">${item.type === 'exe' ? 'EXE' : 'WEB'}</span>
-                                    <button class="guide-text-link" onclick="openGuideModal(${item.id})">查看使用说明</button>
+                                    <button class="guide-text-link" onclick="openGuideModal(${item.id})">使用说明</button>
                                 </div>
                                 <div>
                                     ${item.type === 'exe'
@@ -812,6 +821,13 @@
             if (!document.getElementById('login-overlay').classList.contains('hidden')) closeLoginModal();
             if (!document.getElementById('submit-overlay').classList.contains('hidden')) closeSubmitModal();
             if (!document.getElementById('dashboard-overlay').classList.contains('hidden')) closeDashboard();
+        });
+
+        // 多标签页之间同步收藏（另一个标签页改了收藏，本页实时跟随）
+        window.addEventListener('storage', function (e) {
+            if (e.key !== 'favTools') return;
+            loadFavorites();
+            renderTools(getActiveFilterType(), searchInput.value);
         });
 
         // ============ 全局暴露 ============
