@@ -302,7 +302,7 @@
             </div>
             <form onsubmit="handleLogin(event)" class="space-y-4">
                 <div><label class="block text-xs font-bold text-slate-600 dark:text-slate-400 mb-1.5">用户名 *</label><input id="loginUser" required type="text" placeholder="如：张三" class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white rounded-xl p-3 text-sm focus:outline-none focus:border-purple-600"></div>
-                <div><label class="block text-xs font-bold text-slate-600 dark:text-slate-400 mb-1.5" id="loginPassLabel">通行码（可选）</label><input id="loginPass" type="password" placeholder="如已配置通行码请填写" class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white rounded-xl p-3 text-sm focus:outline-none focus:border-purple-600"></div>
+                <div><label class="block text-xs font-bold text-slate-600 dark:text-slate-400 mb-1.5" id="loginPassLabel">密码 *</label><input id="loginPass" type="password" placeholder="请输入密码" class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white rounded-xl p-3 text-sm focus:outline-none focus:border-purple-600"></div>
                 <button type="submit" class="w-full bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white text-sm py-3 rounded-xl font-bold shadow-md transition-all active:scale-95">登 录</button>
             </form>
             <p class="text-[11px] text-slate-400 mt-3 leading-relaxed" id="loginHint">用户登录用于提交工具（仅自己可见署名）；管理员登录用于审批与删除。</p>
@@ -355,11 +355,27 @@
             <div class="flex gap-2 mb-4 bg-black/5 dark:bg-white/5 p-1 rounded-xl">
                 <button id="dashTabPending" onclick="setDashTab('pending')" class="flex-1 py-2 rounded-lg text-xs font-bold transition-all bg-white dark:bg-slate-800 text-slate-900 dark:text-white shadow-sm">待审核 (<span id="pendingCount">0</span>)</button>
                 <button id="dashTabLive" onclick="setDashTab('live')" class="flex-1 py-2 rounded-lg text-xs font-bold transition-all text-slate-600 dark:text-slate-400">已上线</button>
+                <button id="dashTabUsers" onclick="setDashTab('users')" class="flex-1 py-2 rounded-lg text-xs font-bold transition-all text-slate-600 dark:text-slate-400">用户管理</button>
             </div>
             <div class="mb-3 text-center">
                 <p class="text-[11px] px-3 py-1.5 rounded-lg bg-slate-200/70 dark:bg-slate-700/60 text-slate-500 dark:text-slate-400 font-bold">原始数据来自 GitHub（只读）· 新增数据存于 R2</p>
             </div>
             <div id="dashBody" class="flex-1 overflow-y-auto space-y-3 pr-1"></div>
+        </div>
+    </div>
+
+    <!-- ===== 修改密码模态 ===== -->
+    <div id="cp-overlay" class="fixed inset-0 bg-slate-900/40 dark:bg-black/60 backdrop-blur-md z-[80] hidden flex items-center justify-center p-4 transition-all">
+        <div class="bg-white/95 dark:bg-slate-900/95 border border-white/80 dark:border-slate-800 rounded-3xl shadow-2xl w-full max-w-md p-7 modal-anime">
+            <div class="flex justify-between items-center mb-5"><h3 class="text-lg font-bold text-slate-900 dark:text-white font-mono">🔑 修改密码</h3>
+                <button onclick="closeChangePasswordModal()" class="text-slate-500 hover:text-slate-900 dark:hover:text-white bg-slate-200/80 dark:bg-slate-800 rounded-xl p-2 transition-all"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/></svg></button>
+            </div>
+            <form onsubmit="submitChangePassword(event); return false;" class="space-y-4">
+                <div><label class="block text-xs font-bold text-slate-600 dark:text-slate-400 mb-1.5">原密码 *</label><input id="cpOld" type="password" placeholder="请输入当前密码" class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white rounded-xl p-3 text-sm focus:outline-none focus:border-purple-600"></div>
+                <div><label class="block text-xs font-bold text-slate-600 dark:text-slate-400 mb-1.5">新密码 *（至少 6 位）</label><input id="cpNew" type="password" placeholder="请输入新密码" class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white rounded-xl p-3 text-sm focus:outline-none focus:border-purple-600"></div>
+                <button type="submit" class="w-full bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white text-sm py-3 rounded-xl font-bold shadow-md transition-all active:scale-95">确 定 修 改</button>
+            </form>
+            <p class="text-[11px] text-slate-400 mt-3 leading-relaxed">修改后需重新登录。管理员若想改自己的密码，请在 Cloudflare 环境变量 ADMIN_CREDENTIALS 中更新哈希。</p>
         </div>
     </div>
 
@@ -460,12 +476,10 @@
             const btnM = document.getElementById('navUserAreaM');
             const adminBtn = document.getElementById('navAdminBtn');
             const adminBtnM = document.getElementById('navAdminBtnM');
-            const html = isLoggedIn()
-                ? `<span class="flex items-center gap-2 bg-white/70 dark:bg-slate-800/70 border border-white/80 dark:border-slate-700 px-3 py-2 rounded-xl text-xs font-bold"><span>👤 ${me.sub}</span><button onclick="logout()" class="text-rose-500 hover:text-rose-600 underline">退出</button></span>`
-                : `登录`;
             if (isLoggedIn()) {
-                btn.outerHTML = `<span id="navUserArea" class="flex items-center gap-2 bg-white/70 dark:bg-slate-800/70 border border-white/80 dark:border-slate-700 px-3 py-2 rounded-xl text-xs font-bold"><span>👤 ${me.sub}</span><button onclick="logout()" class="text-rose-500 hover:text-rose-600 underline">退出</button></span>`;
-                btnM.outerHTML = `<span id="navUserAreaM" class="block w-full text-left bg-white/70 dark:bg-slate-800/70 border border-white/80 dark:border-slate-700 px-3 py-2 rounded-xl text-sm font-bold"><span>👤 ${me.sub}</span> <button onclick="logout()" class="text-rose-500 underline">退出</button></span>`;
+                const area = `<span>👤 ${me.sub}</span><button onclick="openChangePasswordModal()" class="text-sky-500 hover:text-sky-600 underline">改密码</button><button onclick="logout()" class="text-rose-500 hover:text-rose-600 underline">退出</button>`;
+                btn.outerHTML = `<span id="navUserArea" class="flex items-center gap-2 bg-white/70 dark:bg-slate-800/70 border border-white/80 dark:border-slate-700 px-3 py-2 rounded-xl text-xs font-bold">${area}</span>`;
+                btnM.outerHTML = `<span id="navUserAreaM" class="block w-full text-left bg-white/70 dark:bg-slate-800/70 border border-white/80 dark:border-slate-700 px-3 py-2 rounded-xl text-sm font-bold">${area}</span>`;
             } else {
                 btn.outerHTML = `<button id="navUserArea" onclick="openLoginModal()" class="bg-slate-900 dark:bg-sky-500 text-white dark:text-slate-950 px-4 py-2 rounded-xl text-xs font-bold transition-all shadow-sm">登录</button>`;
                 btnM.outerHTML = `<button id="navUserAreaM" onclick="openLoginModal()" class="block w-full text-left bg-slate-900 dark:bg-sky-500 text-white dark:text-slate-950 px-3 py-2 rounded-xl text-sm font-bold">登录</button>`;
@@ -854,8 +868,8 @@
             } else {
                 u.className = 'flex-1 py-2 rounded-lg text-xs font-bold transition-all bg-white dark:bg-slate-800 text-slate-900 dark:text-white shadow-sm';
                 a.className = 'flex-1 py-2 rounded-lg text-xs font-bold transition-all text-slate-600 dark:text-slate-400';
-                label.innerText = '通行码（可选）'; document.getElementById('loginPass').placeholder = '如已配置通行码请填写';
-                hint.innerText = '用户登录用于提交工具；若未配置通行码，填写用户名即可。';
+                label.innerText = '密码 *'; document.getElementById('loginPass').placeholder = '请输入密码';
+                hint.innerText = '普通用户：用管理员分配的账号 + 密码登录（初始密码 123456），登录后可自行修改密码。';
             }
         }
         async function handleLogin(e) {
@@ -920,14 +934,18 @@
         function openDashboard() { if (!requireAuth('admin')) return; document.getElementById('dashboard-overlay').classList.remove('hidden'); document.body.style.overflow = 'hidden'; setDashTab('pending'); }
         function closeDashboard() { document.getElementById('dashboard-overlay').classList.add('hidden'); document.body.style.overflow = 'auto'; }
         function setDashTab(tab) {
-            const p = document.getElementById('dashTabPending'); const l = document.getElementById('dashTabLive');
-            if (tab === 'pending') { p.className = 'flex-1 py-2 rounded-lg text-xs font-bold transition-all bg-white dark:bg-slate-800 text-slate-900 dark:text-white shadow-sm'; l.className = 'flex-1 py-2 rounded-lg text-xs font-bold transition-all text-slate-600 dark:text-slate-400'; }
-            else { l.className = 'flex-1 py-2 rounded-lg text-xs font-bold transition-all bg-white dark:bg-slate-800 text-slate-900 dark:text-white shadow-sm'; p.className = 'flex-1 py-2 rounded-lg text-xs font-bold transition-all text-slate-600 dark:text-slate-400'; }
+            const tabs = { pending: 'dashTabPending', live: 'dashTabLive', users: 'dashTabUsers' };
+            for (const [k, id] of Object.entries(tabs)) {
+                const el = document.getElementById(id);
+                if (!el) continue;
+                el.className = 'flex-1 py-2 rounded-lg text-xs font-bold transition-all ' + (k === tab ? 'bg-white dark:bg-slate-800 text-slate-900 dark:text-white shadow-sm' : 'text-slate-600 dark:text-slate-400');
+            }
             renderDashboard(tab);
         }
         function renderDashboard(tab) {
             const body = document.getElementById('dashBody');
             document.getElementById('pendingCount').innerText = pendingData.length;
+            if (tab === 'users') { renderUsersTab(); return; }
             if (tab === 'pending') {
                 if (pendingData.length === 0) { body.innerHTML = '<div class="text-center py-12 text-slate-400 italic">暂无待审核工具</div>'; return; }
                 body.innerHTML = pendingData.map(t => `
@@ -969,6 +987,150 @@
                 if (res.ok && d.success) { toast('已删除'); await loadTools(); if (isAdmin()) await loadPending(); renderDashboard('live'); }
                 else toast(d.error || '删除失败');
             } catch (e) { toast('网络错误'); }
+        }
+
+        // ============ 后台：用户管理（账号系统） ============
+        let importRows = null;
+        function renderUsersTab() {
+            const body = document.getElementById('dashBody');
+            body.innerHTML = `
+                <div class="space-y-4">
+                    <div class="border border-slate-200 dark:border-slate-700 rounded-2xl p-4 bg-white/60 dark:bg-slate-800/40">
+                        <div class="font-bold text-slate-900 dark:text-white mb-3 text-sm">① 新建单个用户</div>
+                        <div class="flex gap-2 flex-wrap items-center">
+                            <input id="nuUser" placeholder="用户名" class="w-32 bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white rounded-xl p-2.5 text-sm">
+                            <input id="nuPass" placeholder="密码(默认123456)" class="w-40 bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white rounded-xl p-2.5 text-sm">
+                            <select id="nuRole" class="bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white rounded-xl p-2.5 text-sm"><option value="user">普通用户</option><option value="admin">管理员</option></select>
+                            <button onclick="createUser()" class="bg-emerald-500 hover:bg-emerald-600 text-white text-xs px-4 py-2.5 rounded-xl font-bold">＋ 创建</button>
+                        </div>
+                    </div>
+                    <div class="border border-slate-200 dark:border-slate-700 rounded-2xl p-4 bg-white/60 dark:bg-slate-800/40">
+                        <div class="font-bold text-slate-900 dark:text-white mb-3 text-sm">② 批量导入（.xlsx / .csv）</div>
+                        <div class="flex gap-2 flex-wrap items-center">
+                            <input id="impFile" type="file" accept=".xlsx,.csv" class="text-sm">
+                            <button onclick="uploadImport()" class="bg-sky-500 hover:bg-sky-600 text-white text-xs px-4 py-2.5 rounded-xl font-bold">上传并解析</button>
+                        </div>
+                        <div id="impPreview" class="hidden mt-3 space-y-3 border-t border-slate-200 dark:border-slate-700 pt-3">
+                            <div class="text-xs text-slate-600 dark:text-slate-300">登录账号用哪一列：<select id="impUserCol" class="bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white rounded-lg p-1.5 text-sm"></select></div>
+                            <div class="text-xs text-slate-600 dark:text-slate-300 flex gap-4 items-center flex-wrap">
+                                <label class="flex items-center gap-1"><input type="checkbox" id="impSkipHeader" checked> 首行是表头(跳过)</label>
+                                <label class="flex items-center gap-1">初始密码：<input id="impPass" value="123456" class="w-28 bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white rounded-lg p-1.5 text-sm"></label>
+                                <label class="flex items-center gap-1">密码列(可选)：<select id="impPassCol" class="bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white rounded-lg p-1.5 text-sm"><option value="-1">无(用初始密码)</option></select></label>
+                            </div>
+                            <div class="flex gap-2 items-center">
+                                <button onclick="confirmImport()" class="bg-emerald-500 hover:bg-emerald-600 text-white text-xs px-4 py-2.5 rounded-xl font-bold">确认导入</button>
+                                <span id="impMsg" class="text-xs text-slate-500"></span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="border border-slate-200 dark:border-slate-700 rounded-2xl p-4 bg-white/60 dark:bg-slate-800/40">
+                        <div class="font-bold text-slate-900 dark:text-white mb-3 text-sm">③ 用户列表</div>
+                        <div id="userList" class="space-y-2"></div>
+                    </div>
+                </div>`;
+            loadUsers();
+        }
+        async function loadUsers() {
+            const box = document.getElementById('userList'); if (!box) return;
+            try {
+                const res = await fetch('/api/admin-users', { headers: authHeaders(), cache: 'no-store' });
+                const d = await res.json();
+                if (!res.ok) { box.innerHTML = '<div class="text-rose-500 text-xs">加载失败</div>'; return; }
+                const list = d.users || [];
+                if (!list.length) { box.innerHTML = '<div class="text-slate-400 text-xs italic">暂无用户（管理员 liyt1 除外）</div>'; return; }
+                box.innerHTML = list.map(u => `
+                    <div class="flex items-center justify-between gap-2 border border-slate-200 dark:border-slate-700 rounded-xl p-3 bg-white/60 dark:bg-slate-800/40">
+                        <div class="min-w-0"><span class="font-bold text-slate-900 dark:text-white">${escapeHtml(u.user)}</span> <span class="text-[10px] px-2 py-0.5 rounded bg-slate-200 dark:bg-slate-700 text-slate-500">${u.role === 'admin' ? '管理员' : '用户'}</span></div>
+                        <div class="flex gap-2 shrink-0">
+                            <button data-u="${escapeHtml(u.user)}" onclick="resetUserPassword(this)" class="bg-amber-500 hover:bg-amber-600 text-white text-xs px-3 py-1.5 rounded-lg font-bold">重置密码</button>
+                            <button data-u="${escapeHtml(u.user)}" onclick="deleteUser(this)" class="bg-rose-500 hover:bg-rose-600 text-white text-xs px-3 py-1.5 rounded-lg font-bold">删除</button>
+                        </div>
+                    </div>`).join('');
+            } catch (e) { box.innerHTML = '<div class="text-rose-500 text-xs">网络错误</div>'; }
+        }
+        async function createUser() {
+            const user = document.getElementById('nuUser').value.trim();
+            const pass = document.getElementById('nuPass').value || '123456';
+            const role = document.getElementById('nuRole').value;
+            if (!user) { toast('请输入用户名'); return; }
+            try {
+                const res = await fetch('/api/admin-users', { method: 'POST', headers: authHeaders(), body: JSON.stringify({ action: 'create', username: user, password: pass, role }), cache: 'no-store' });
+                const d = await res.json();
+                toast(res.ok && d.success ? d.message : (d.error || '创建失败'));
+                if (res.ok) { document.getElementById('nuUser').value = ''; document.getElementById('nuPass').value = ''; loadUsers(); }
+            } catch (e) { toast('网络错误'); }
+        }
+        async function uploadImport() {
+            const f = document.getElementById('impFile').files && document.getElementById('impFile').files[0];
+            if (!f) { toast('请选择文件'); return; }
+            const fd = new FormData(); fd.append('file', f);
+            try {
+                const res = await fetch('/api/admin-import', { method: 'POST', headers: authHeaders(true), body: fd, cache: 'no-store' });
+                const d = await res.json();
+                if (res.ok && d.ok) {
+                    importRows = d.rows;
+                    const uc = document.getElementById('impUserCol');
+                    uc.innerHTML = d.columns.map((c, i) => `<option value="${i}" ${i === d.guessedUserCol ? 'selected' : ''}>${escapeHtml(c || ('列' + (i + 1)))}</option>`).join('');
+                    const pc = document.getElementById('impPassCol');
+                    pc.innerHTML = '<option value="-1">无(用初始密码)</option>' + d.columns.map((c, i) => `<option value="${i}">${escapeHtml(c || ('列' + (i + 1)))}</option>`).join('');
+                    document.getElementById('impSkipHeader').checked = d.headerDetected;
+                    document.getElementById('impPreview').classList.remove('hidden');
+                    document.getElementById('impMsg').innerText = '共解析 ' + d.rows.length + ' 行，请确认账号列后导入';
+                } else { toast(d.error || '解析失败'); }
+            } catch (e) { toast('网络错误'); }
+        }
+        async function confirmImport() {
+            if (!importRows) { toast('请先上传并解析'); return; }
+            const body = {
+                rows: importRows,
+                userCol: parseInt(document.getElementById('impUserCol').value, 10),
+                passCol: parseInt(document.getElementById('impPassCol').value, 10),
+                skipHeader: document.getElementById('impSkipHeader').checked,
+                defaultPass: document.getElementById('impPass').value || '123456'
+            };
+            try {
+                const res = await fetch('/api/admin-import', { method: 'POST', headers: authHeaders(), body: JSON.stringify(body), cache: 'no-store' });
+                const d = await res.json();
+                document.getElementById('impMsg').innerText = d.message || (d.error || '');
+                toast(d.message || d.error || '导入完成');
+                if (res.ok && d.success) { importRows = null; document.getElementById('impPreview').classList.add('hidden'); loadUsers(); }
+            } catch (e) { toast('网络错误'); }
+        }
+        async function resetUserPassword(btn) {
+            const u = btn.dataset.u;
+            if (!confirm('确定把「' + u + '」的密码重置为 123456？')) return;
+            try {
+                const res = await fetch('/api/admin-users', { method: 'POST', headers: authHeaders(), body: JSON.stringify({ action: 'reset', username: u }), cache: 'no-store' });
+                const d = await res.json();
+                toast(res.ok && d.success ? d.message : (d.error || '失败'));
+                if (res.ok) loadUsers();
+            } catch (e) { toast('网络错误'); }
+        }
+        async function deleteUser(btn) {
+            const u = btn.dataset.u;
+            if (!confirm('确定删除用户「' + u + '」？该用户将无法再登录。')) return;
+            try {
+                const res = await fetch('/api/admin-users?username=' + encodeURIComponent(u), { method: 'DELETE', headers: authHeaders(), cache: 'no-store' });
+                const d = await res.json();
+                toast(res.ok && d.success ? d.message : (d.error || '失败'));
+                if (res.ok) loadUsers();
+            } catch (e) { toast('网络错误'); }
+        }
+
+        // ============ 修改密码（普通用户） ============
+        function openChangePasswordModal() { document.getElementById('cp-overlay').classList.remove('hidden'); document.body.style.overflow = 'hidden'; }
+        function closeChangePasswordModal() { document.getElementById('cp-overlay').classList.add('hidden'); document.body.style.overflow = 'auto'; document.getElementById('cpOld').value = ''; document.getElementById('cpNew').value = ''; }
+        async function submitChangePassword(e) {
+            if (e && e.preventDefault) e.preventDefault();
+            const oldP = document.getElementById('cpOld').value;
+            const newP = document.getElementById('cpNew').value;
+            if (!newP || newP.length < 6) { toast('新密码至少 6 位'); return; }
+            try {
+                const res = await fetch('/api/change-password', { method: 'POST', headers: authHeaders(), body: JSON.stringify({ oldPassword: oldP, newPassword: newP }), cache: 'no-store' });
+                const d = await res.json();
+                if (res.ok && d.success) { closeChangePasswordModal(); toast('密码已修改，请重新登录'); logout(); }
+                else toast(d.message || d.error || '修改失败');
+            } catch (err) { toast('网络错误'); }
         }
 
         // ============ 后台：编辑工具信息（仅对 R2 新增工具；GitHub 原始数据只读） ============
@@ -1143,7 +1305,7 @@
         });
 
         // ============ 全局暴露 ============
-        Object.assign(window, { toggleDarkMode, handleCardMouseMove, openAboutModal, closeAboutModal, previewAbout, saveAboutContent, openGuideModal, closeGuideModal, previewGuide, saveGuideForCurrentTool, openModal, toggleModalSize, toggleFavorite, openLoginModal, closeLoginModal, setLoginMode, handleLogin, openSubmitModal, closeSubmitModal, adaptSubType, handleSubmit, openDashboard, closeDashboard, setDashTab, adminReview, deleteTool, toggleHamburger, logout, iconFallback, autoFetchIcon, onIconFileChange, openIconEditor, closeIconEditor, ieAuto, ieFileChange, ieClear, saveToolIcon, openToolEditor, closeToolEditor, saveToolEdit });
+        Object.assign(window, { toggleDarkMode, handleCardMouseMove, openAboutModal, closeAboutModal, previewAbout, saveAboutContent, openGuideModal, closeGuideModal, previewGuide, saveGuideForCurrentTool, openModal, toggleModalSize, toggleFavorite, openLoginModal, closeLoginModal, setLoginMode, handleLogin, openSubmitModal, closeSubmitModal, adaptSubType, handleSubmit, openDashboard, closeDashboard, setDashTab, adminReview, deleteTool, toggleHamburger, logout, iconFallback, autoFetchIcon, onIconFileChange, openIconEditor, closeIconEditor, ieAuto, ieFileChange, ieClear, saveToolIcon, openToolEditor, closeToolEditor, saveToolEdit, renderUsersTab, loadUsers, createUser, uploadImport, confirmImport, resetUserPassword, deleteUser, openChangePasswordModal, closeChangePasswordModal, submitChangePassword });
 
         // ============ 启动 ============
         initTheme();
