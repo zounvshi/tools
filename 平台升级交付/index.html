@@ -1,0 +1,826 @@
+<!DOCTYPE html>
+<html lang="zh-CN" class="light">
+<head>
+    <meta charset="UTF-8">
+    <link rel="icon" type="image/png" href="favicon.png">
+    <title>办公提效工具集成平台</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = { darkMode: 'class' }
+    </script>
+    <style>
+        /* ===== 滚动条 ===== */
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 99px; }
+        .dark ::-webkit-scrollbar-thumb { background: #334155; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+
+        /* ===== 磨玻璃 ===== */
+        .glass-panel {
+            background: linear-gradient(135deg, rgba(255,255,255,0.7) 0%, rgba(255,255,255,0.35) 100%);
+            backdrop-filter: blur(20px) saturate(160%);
+            -webkit-backdrop-filter: blur(20px) saturate(160%);
+            border: 1px solid rgba(255,255,255,0.6);
+            border-top: 1px solid rgba(255,255,255,0.9);
+            box-shadow: 0 10px 30px -5px rgba(0,0,0,0.05), inset 0 1px 0 0 rgba(255,255,255,0.8);
+        }
+        .dark .glass-panel {
+            background: linear-gradient(135deg, rgba(30,41,59,0.7) 0%, rgba(15,23,42,0.4) 100%);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-top: 1px solid rgba(255,255,255,0.15);
+            box-shadow: 0 10px 30px -5px rgba(0,0,0,0.3), inset 0 1px 0 0 rgba(255,255,255,0.1);
+        }
+
+        /* ===== 卡片 ===== */
+        .modern-card {
+            position: relative;
+            background: linear-gradient(135deg, rgba(255,255,255,0.65) 0%, rgba(255,255,255,0.25) 100%);
+            backdrop-filter: blur(24px) saturate(180%);
+            -webkit-backdrop-filter: blur(24px) saturate(180%);
+            border-radius: 1.5rem;
+            overflow: hidden;
+            transition: transform .35s cubic-bezier(.16,1,.3,1), box-shadow .35s ease, border-color .35s ease;
+            box-shadow: 0 12px 32px 0 rgba(31,38,135,0.04), inset 0 1px 1px 0 rgba(255,255,255,0.9);
+            border: 1px solid rgba(255,255,255,0.6);
+            border-top: 1px solid rgba(255,255,255,0.9);
+        }
+        .dark .modern-card {
+            background: linear-gradient(135deg, rgba(30,41,59,0.6) 0%, rgba(15,23,42,0.3) 100%);
+            box-shadow: 0 12px 32px 0 rgba(0,0,0,0.3), inset 0 1px 1px 0 rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-top: 1px solid rgba(255,255,255,0.15);
+        }
+        .modern-card::before {
+            content: ""; position: absolute; inset: 0;
+            background: radial-gradient(600px circle at var(--mouse-x,50%) var(--mouse-y,50%), rgba(56,189,248,0.15), transparent 40%);
+            opacity: 0; transition: opacity .3s ease; pointer-events: none; z-index: 1;
+        }
+        .dark .modern-card::before { background: radial-gradient(600px circle at var(--mouse-x,50%) var(--mouse-y,50%), rgba(14,165,233,0.25), transparent 40%); }
+        .modern-card:hover::before { opacity: 1; }
+        .modern-card:hover { transform: translateY(-5px) scale(1.005); box-shadow: 0 20px 40px -10px rgba(14,165,233,0.2), 0 0 20px rgba(56,189,248,0.2); border-color: rgba(56,189,248,0.5); }
+        .card-inner { background: transparent; border-radius: 1.5rem; height: 100%; width: 100%; position: relative; z-index: 2; }
+
+        /* ===== 模态 ===== */
+        .modal-anime { animation: slideUp .4s cubic-bezier(.16,1,.3,1) forwards; }
+        @keyframes slideUp { from { transform: translateY(40px) scale(.96); opacity: 0; } to { transform: translateY(0) scale(1); opacity: 1; } }
+        #modal-overlay,#admin-overlay,#guide-overlay,#about-overlay,#login-overlay,#submit-overlay,#dashboard-overlay { backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px); transition: opacity .3s ease; }
+
+        .favorite-btn:active { transform: scale(.75); }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+        /* ===== 标签 ===== */
+        .tag-exe { color:#0f766e; background: rgba(204,251,241,0.8); border:1px solid rgba(13,148,136,0.3); }
+        .dark .tag-exe { color:#2dd4bf; background: rgba(20,83,45,0.4); border:1px solid rgba(45,212,191,0.3); }
+        .tag-web { color:#0369a1; background: rgba(224,242,254,0.8); border:1px solid rgba(2,132,199,0.3); }
+        .dark .tag-web { color:#38bdf8; background: rgba(12,74,110,0.4); border:1px solid rgba(56,189,248,0.3); }
+
+        /* ===== 富文本 ===== */
+        .rich-text-content img { max-width:100%; border-radius:.75rem; margin:1rem 0; border:1px solid rgba(56,189,248,0.3); }
+        .rich-text-content h1,.rich-text-content h2,.rich-text-content h3 { color:#0284c7; font-weight:bold; margin:1.2rem 0 .6rem 0; }
+        .dark .rich-text-content h1,.dark .rich-text-content h2,.dark .rich-text-content h3 { color:#38bdf8; }
+        .rich-text-content p { margin-bottom:.8rem; line-height:1.7; }
+        .rich-text-content ul,.rich-text-content ol { margin-left:1.5rem; margin-bottom:.8rem; list-style-type: disc; }
+        .rich-text-content li { margin-bottom:.3rem; }
+        .rich-text-content strong { color:#0f172a; }
+        .dark .rich-text-content strong { color:#f8fafc; }
+        .rich-text-content a { color:#0284c7; text-decoration: underline; }
+        .dark .rich-text-content a { color:#38bdf8; }
+
+        /* ===== 图标 ===== */
+        .tool-icon { width:44px; height:44px; border-radius:12px; flex-shrink:0; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:18px; color:#fff; background:linear-gradient(135deg,#38bdf8,#6366f1); box-shadow:0 4px 12px rgba(56,189,248,0.3); overflow:hidden; object-fit:cover; }
+        .dark .tool-icon { box-shadow:0 4px 12px rgba(56,189,248,0.15); }
+        .modern-card:hover .tool-icon { transform: scale(1.04) rotate(-1deg); box-shadow:0 6px 16px rgba(56,189,248,0.4); }
+        .tool-icon img { width:100%; height:100%; object-fit:cover; }
+
+        .tool-author { font-size:.7rem; color:#94a3b8; font-weight:400; letter-spacing:.02em; margin-top:.05rem; line-height:1.3; }
+        .dark .tool-author { color:#64748b; }
+        .tool-author .at-symbol { color:#94a3b8; }
+        .dark .tool-author .at-symbol { color:#64748b; }
+
+        .card-header { display:flex; align-items:center; gap:.75rem; margin-bottom:.5rem; }
+        .card-header .name-area { flex:1; min-width:0; }
+        .card-header .name-area .tool-name { font-size:1.05rem; font-weight:700; color:#0f172a; letter-spacing:-.02em; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+        .dark .card-header .name-area .tool-name { color:#f1f5f9; }
+        .card-header .tag-group { display:flex; flex-wrap:wrap; gap:.3rem; flex-shrink:0; justify-content:flex-end; }
+        .card-header .tag-group .tag-exe,.card-header .tag-group .tag-web { font-size:.55rem; padding:.1rem .6rem; border-radius:999px; font-weight:700; text-transform:uppercase; letter-spacing:.04em; }
+
+        /* ===== 顶栏 ===== */
+        .topbar { position:sticky; top:0; z-index:50; }
+        .topbar-link { color:#475569; }
+        .dark .topbar-link { color:#cbd5e1; }
+        .topbar-link:hover { color:#0ea5e9; }
+
+        /* ===== 文字链接（使用说明）===== */
+        .guide-text-link {
+            color:#0284c7; font-size:.8rem; font-weight:600; text-decoration:underline; text-underline-offset:3px;
+            background:none; border:none; cursor:pointer; padding:0; transition:color .2s;
+        }
+        .guide-text-link:hover { color:#0369a1; }
+        .dark .guide-text-link { color:#38bdf8; }
+        .dark .guide-text-link:hover { color:#7dd3fc; }
+
+        /* ===== 骨架屏 ===== */
+        .skeleton { position:relative; overflow:hidden; background:rgba(148,163,184,0.15); border-radius:1.5rem; }
+        .skeleton::after { content:""; position:absolute; inset:0; transform:translateX(-100%);
+            background:linear-gradient(90deg, transparent, rgba(255,255,255,0.45), transparent);
+            animation:shimmer 1.4s infinite; }
+        .dark .skeleton::after { background:linear-gradient(90deg, transparent, rgba(255,255,255,0.08), transparent); }
+        @keyframes shimmer { 100% { transform:translateX(100%); } }
+
+        /* ===== Toast ===== */
+        #toast { position:fixed; left:50%; bottom:32px; transform:translateX(-50%) translateY(20px); opacity:0;
+            background:rgba(15,23,42,0.92); color:#fff; padding:.7rem 1.2rem; border-radius:14px; font-size:.85rem;
+            z-index:100; transition:all .3s; pointer-events:none; box-shadow:0 10px 30px rgba(0,0,0,.3); }
+        #toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
+
+        .hidden-force { display:none !important; }
+    </style>
+</head>
+<body class="bg-[#eaf4f8] dark:bg-[#0b0f19] text-slate-800 dark:text-slate-100 min-h-screen font-sans antialiased overflow-x-hidden relative text-base transition-colors duration-500">
+
+    <div class="fixed top-[-100px] left-[-100px] w-[700px] h-[700px] bg-sky-400/30 dark:bg-sky-600/15 rounded-full blur-[140px] pointer-events-none -z-10 transition-colors duration-500"></div>
+    <div class="fixed top-[20%] right-[-100px] w-[750px] h-[750px] bg-purple-400/25 dark:bg-purple-600/15 rounded-full blur-[150px] pointer-events-none -z-10 transition-colors duration-500"></div>
+    <div class="fixed bottom-[-100px] left-[30%] w-[650px] h-[650px] bg-indigo-400/20 dark:bg-indigo-600/10 rounded-full blur-[140px] pointer-events-none -z-10 transition-colors duration-500"></div>
+
+    <!-- ===== 全局顶栏 ===== -->
+    <nav class="topbar glass-panel border-x-0 border-t-0 rounded-none">
+        <div class="max-w-[1600px] mx-auto px-5 md:px-8 py-3 flex items-center justify-between gap-3">
+            <div class="flex items-center gap-3">
+                <span class="bg-slate-900 dark:bg-sky-500 text-white dark:text-slate-950 text-xs font-black tracking-widest px-3 py-1 rounded-lg shadow-md">TOOL KIT</span>
+                <span class="text-slate-700 dark:text-slate-200 text-sm font-bold tracking-wide hidden sm:inline">高效数字工作流平台</span>
+            </div>
+
+            <!-- 桌面端右区 -->
+            <div class="hidden md:flex items-center gap-2">
+                <button onclick="openAboutModal()" class="topbar-link px-3 py-2 rounded-xl text-xs font-bold hover:bg-white/60 dark:hover:bg-slate-800 transition-all">关于我们</button>
+                <button onclick="openSubmitModal()" class="bg-white/70 dark:bg-slate-800/70 hover:bg-white dark:hover:bg-slate-700 border border-white/80 dark:border-slate-700 text-slate-700 dark:text-slate-200 px-4 py-2 rounded-xl text-xs font-bold transition-all shadow-sm">＋ 提交工具</button>
+                <button id="navAdminBtn" onclick="openDashboard()" class="hidden bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white px-4 py-2 rounded-xl text-xs font-bold transition-all shadow-md">🛠️ 管理后台</button>
+                <button id="navUserArea" onclick="openLoginModal()" class="bg-slate-900 dark:bg-sky-500 text-white dark:text-slate-950 px-4 py-2 rounded-xl text-xs font-bold transition-all shadow-sm">登录</button>
+            </div>
+
+            <!-- 移动端汉堡 -->
+            <button id="hamburgerBtn" onclick="toggleHamburger()" class="md:hidden flex items-center justify-center w-10 h-10 rounded-xl bg-white/70 dark:bg-slate-800/70 border border-white/80 dark:border-slate-700 text-slate-700 dark:text-slate-200">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"/></svg>
+            </button>
+        </div>
+
+        <!-- 移动端下拉菜单 -->
+        <div id="hamburgerMenu" class="md:hidden hidden border-t border-white/60 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl px-5 py-3 space-y-2">
+            <button onclick="openAboutModal()" class="block w-full text-left topbar-link px-3 py-2 rounded-xl text-sm font-bold hover:bg-white/60 dark:hover:bg-slate-800">关于我们</button>
+            <button onclick="openSubmitModal()" class="block w-full text-left text-slate-700 dark:text-slate-200 px-3 py-2 rounded-xl text-sm font-bold hover:bg-white/60 dark:hover:bg-slate-800">＋ 提交工具</button>
+            <button id="navAdminBtnM" onclick="openDashboard()" class="hidden block w-full text-left text-purple-600 dark:text-purple-400 px-3 py-2 rounded-xl text-sm font-bold hover:bg-white/60 dark:hover:bg-slate-800">🛠️ 管理后台</button>
+            <button id="navUserAreaM" onclick="openLoginModal()" class="block w-full text-left bg-slate-900 dark:bg-sky-500 text-white dark:text-slate-950 px-3 py-2 rounded-xl text-sm font-bold">登录</button>
+        </div>
+    </nav>
+
+    <!-- ===== 页眉（Hero）===== -->
+    <header class="max-w-[1600px] mx-auto px-5 md:px-8 pt-8 pb-8 border-b border-slate-300/40 dark:border-slate-800/80 relative">
+        <div class="flex flex-col lg:flex-row lg:items-end justify-between gap-8">
+            <div>
+                <h1 class="text-4xl md:text-6xl font-black tracking-tight text-slate-900 dark:text-white mb-4">办公提效工具集成</h1>
+                <p class="text-slate-600 dark:text-slate-400 max-w-2xl text-base leading-relaxed font-normal">
+                    聚合高频便携桌面工具（<span class="text-sky-600 dark:text-sky-400 font-bold">.exe</span>）与现代化在线云网页（<span class="text-purple-600 dark:text-purple-400 font-bold">Web</span>），一键秒级启航。
+                </p>
+            </div>
+            <div class="grid grid-cols-3 gap-3 md:gap-5 w-full lg:w-auto lg:min-w-[520px]">
+                <div class="glass-panel rounded-2xl p-4 md:p-5 text-center relative overflow-hidden">
+                    <div class="absolute top-0 left-0 w-full h-[3px] bg-sky-500"></div>
+                    <div class="text-slate-500 dark:text-slate-400 text-[10px] md:text-xs mb-1 font-mono tracking-widest uppercase font-bold">Total</div>
+                    <div class="text-3xl md:text-4xl font-black text-slate-900 dark:text-white font-mono" id="totalCount">0</div>
+                </div>
+                <div class="glass-panel rounded-2xl p-4 md:p-5 text-center relative overflow-hidden">
+                    <div class="absolute top-0 left-0 w-full h-[3px] bg-purple-500"></div>
+                    <div class="text-slate-500 dark:text-slate-400 text-[10px] md:text-xs mb-1 font-mono tracking-widest uppercase font-bold">Dimension</div>
+                    <div class="text-3xl md:text-4xl font-black text-slate-900 dark:text-white font-mono">02</div>
+                </div>
+                <div class="glass-panel rounded-2xl p-4 md:p-5 text-center relative overflow-hidden">
+                    <div class="absolute top-0 left-0 w-full h-[3px] bg-rose-500"></div>
+                    <div class="text-slate-500 dark:text-slate-400 text-[10px] md:text-xs mb-1 font-mono tracking-widest uppercase font-bold">Favorites</div>
+                    <div class="text-3xl md:text-4xl font-black text-slate-900 dark:text-white font-mono" id="favCount">0</div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- ===== 悬浮工具栏 ===== -->
+    <div class="sticky top-[60px] z-40 max-w-[1600px] mx-auto px-5 md:px-8 transition-all duration-300 pointer-events-none">
+        <div class="glass-panel rounded-2xl p-2.5 shadow-lg pointer-events-auto flex flex-col md:flex-row items-center justify-between gap-3">
+            <div class="relative w-full md:max-w-md shrink-0">
+                <span class="absolute inset-y-0 left-0 flex items-center pl-3.5 pointer-events-none text-slate-400 dark:text-slate-500">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                </span>
+                <input type="text" id="searchInput" placeholder="检索工具、用途..." class="w-full bg-white/50 dark:bg-slate-900/60 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 rounded-xl pl-10 pr-4 py-2 text-sm font-mono transition-all border border-white/60 dark:border-slate-700/50 shadow-inner focus:outline-none focus:bg-white dark:focus:bg-slate-900 focus:border-sky-500 focus:ring-2 focus:ring-sky-500/20">
+            </div>
+            <div class="flex items-center justify-between md:justify-end gap-3 w-full md:w-auto overflow-x-auto no-scrollbar">
+                <div class="flex items-center gap-1 bg-black/5 dark:bg-white/5 p-1 rounded-xl shrink-0">
+                    <button class="filter-btn shrink-0 bg-white dark:bg-slate-800 text-slate-900 dark:text-white shadow-sm px-3 md:px-4 py-1.5 rounded-lg text-xs font-bold transition-all" data-type="all">全部</button>
+                    <button class="filter-btn shrink-0 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white px-3 md:px-4 py-1.5 rounded-lg text-xs font-bold transition-all" data-type="exe">.EXE</button>
+                    <button class="filter-btn shrink-0 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white px-3 md:px-4 py-1.5 rounded-lg text-xs font-bold transition-all" data-type="html">WEB</button>
+                </div>
+                <span class="hidden md:block w-px h-5 bg-slate-300/60 dark:bg-slate-700/60"></span>
+                <button id="favToggle" class="flex items-center gap-1.5 bg-white/60 dark:bg-slate-800/60 hover:bg-white dark:hover:bg-slate-800 border border-white/80 dark:border-slate-700/60 text-slate-700 dark:text-slate-300 hover:text-rose-600 dark:hover:text-rose-400 px-3 md:px-4 py-2 rounded-xl text-xs font-bold transition-all shadow-sm shrink-0">
+                    <svg id="favToggleIcon" class="w-3.5 h-3.5 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/></svg>
+                    <span id="favToggleText">收藏</span>
+                </button>
+                <button id="themeToggleBtn" onclick="toggleDarkMode()" class="flex items-center justify-center w-9 h-9 bg-white/60 dark:bg-slate-800/60 hover:bg-white dark:hover:bg-slate-800 border border-white/80 dark:border-slate-700/60 text-slate-700 dark:text-slate-300 rounded-xl text-xs transition-all shadow-sm shrink-0" title="切换主题"><span id="themeIcon">🌙</span></button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== 卡片网格 ===== -->
+    <main class="max-w-[1600px] mx-auto px-5 md:px-8 pt-10 pb-28">
+        <div id="cardGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-8"></div>
+    </main>
+
+    <!-- ===== 关于我们模态 ===== -->
+    <div id="about-overlay" class="fixed inset-0 bg-slate-900/40 dark:bg-black/60 backdrop-blur-md z-[60] hidden flex items-center justify-center p-4 transition-all">
+        <div class="bg-white/95 dark:bg-slate-900/95 border border-white/80 dark:border-slate-800 rounded-3xl shadow-2xl w-full max-w-3xl max-h-[90vh] flex flex-col overflow-hidden modal-anime">
+            <div class="flex justify-between items-center px-6 py-4 border-b border-slate-200 dark:border-slate-800 bg-slate-50/80 dark:bg-slate-900/80">
+                <div class="flex items-center gap-2.5"><span class="text-2xl">💡</span><h3 class="text-lg font-bold text-slate-900 dark:text-white font-mono">关于本平台</h3></div>
+                <button onclick="closeAboutModal()" class="text-slate-500 hover:text-slate-900 dark:hover:text-white bg-slate-200/80 dark:bg-slate-800 rounded-xl p-2 transition-all"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/></svg></button>
+            </div>
+            <div id="about-content-area" class="flex-1 overflow-y-auto p-8 text-slate-700 dark:text-slate-300 text-base leading-relaxed rich-text-content space-y-4"></div>
+            <div id="adminAboutEditor" class="hidden border-t border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/50 p-6 space-y-4">
+                <div class="flex items-center gap-2 text-purple-600 dark:text-purple-400 text-xs font-mono font-bold"><span class="w-2 h-2 bg-purple-600 rounded-full radar-pulse"></span>管理员编辑模式 · 修改全站「关于我们」</div>
+                <textarea id="aboutEditorTextarea" rows="6" class="w-full bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white rounded-xl p-4 text-sm font-mono focus:outline-none focus:border-purple-600 focus:ring-2 focus:ring-purple-500/20" placeholder="支持 HTML 标签..."></textarea>
+                <div class="flex justify-between items-center"><p class="text-slate-500 text-xs">💡 可使用 &lt;h2&gt;、&lt;p&gt;、&lt;ul&gt; 等标签</p>
+                    <div class="flex gap-3"><button onclick="previewAbout()" class="bg-slate-200 dark:bg-slate-800 hover:bg-slate-300 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 text-xs px-4 py-2.5 rounded-xl font-bold transition-all border border-slate-300 dark:border-slate-700">👁️ 预览</button>
+                    <button onclick="saveAboutContent()" class="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white text-xs px-5 py-2.5 rounded-xl font-bold shadow-md transition-all">💾 保存</button></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== 在线预览模态 ===== -->
+    <div id="modal-overlay" class="fixed inset-0 bg-slate-900/40 dark:bg-black/60 backdrop-blur-md z-50 hidden flex items-center justify-center p-3 md:p-8 transition-all">
+        <div id="modalContainer" class="bg-white/90 dark:bg-slate-900/90 border border-white/80 dark:border-slate-700 shadow-2xl rounded-3xl w-full max-w-7xl h-[88vh] flex flex-col overflow-hidden modal-anime transition-all duration-300">
+            <div class="flex flex-wrap justify-between items-center px-6 py-4 border-b border-slate-200 dark:border-slate-800 bg-white/70 dark:bg-slate-900/70 backdrop-blur-md gap-3">
+                <div class="flex items-center gap-2.5"><span class="w-2.5 h-2.5 rounded-full bg-purple-500 radar-pulse shadow-md shadow-purple-500/80"></span><h3 class="text-base font-bold text-slate-900 dark:text-white tracking-wide font-mono truncate max-w-[200px] sm:max-w-sm" id="modal-title">SANDBOX</h3></div>
+                <div class="flex items-center gap-2.5">
+                    <button id="zoom-modal" onclick="toggleModalSize()" class="text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 font-bold rounded-xl text-xs px-4 py-2 border border-slate-300 dark:border-slate-700 transition-all flex items-center gap-1.5"><span id="zoom-icon">🔳</span> <span id="zoom-text">全屏</span></button>
+                    <a id="external-link" href="#" target="_blank" class="text-sky-700 dark:text-sky-400 hover:text-sky-800 bg-sky-50 dark:bg-sky-950/50 hover:bg-sky-100 border border-sky-300 dark:border-sky-800 font-bold rounded-xl text-xs px-4 py-2 transition-all flex items-center gap-1.5">浏览器查看</a>
+                    <button id="close-modal" class="text-rose-600 dark:text-rose-400 hover:text-white bg-rose-50 dark:bg-rose-950/50 hover:bg-rose-600 font-bold rounded-xl text-xs px-4 py-2 border border-rose-300 dark:border-rose-800 hover:border-rose-600 transition-all">✕ 关闭</button>
+                </div>
+            </div>
+            <div class="flex-grow bg-slate-50 dark:bg-slate-950 relative">
+                <div class="absolute inset-0 flex items-center justify-center text-slate-400 dark:text-slate-600 text-sm font-mono gap-2 pointer-events-none"><svg class="animate-spin h-5 w-5 text-sky-500" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>LOADING...</div>
+                <iframe id="preview-iframe" src="" class="w-full h-full border-none relative z-10" allow="clipboard-write"></iframe>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== 使用说明模态 ===== -->
+    <div id="guide-overlay" class="fixed inset-0 bg-slate-900/40 dark:bg-black/60 backdrop-blur-md z-[60] hidden flex items-center justify-center p-4 transition-all">
+        <div class="bg-white/95 dark:bg-slate-900/95 border border-white/80 dark:border-slate-800 rounded-3xl shadow-2xl w-full max-w-4xl max-h-[90vh] flex flex-col overflow-hidden modal-anime">
+            <div class="flex justify-between items-center px-6 py-4 border-b border-slate-200 dark:border-slate-800 bg-slate-50/80 dark:bg-slate-900/80"><div class="flex items-center gap-2.5"><span class="text-2xl">📖</span><h3 class="text-lg font-bold text-slate-900 dark:text-white font-mono" id="guide-title">使用说明书</h3></div>
+                <button onclick="closeGuideModal()" class="text-slate-500 hover:text-slate-900 dark:hover:text-white bg-slate-200/80 dark:bg-slate-800 rounded-xl p-2 transition-all"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/></svg></button>
+            </div>
+            <div id="guide-content-area" class="flex-1 overflow-y-auto p-8 text-slate-700 dark:text-slate-300 text-base leading-relaxed rich-text-content space-y-4"><p class="text-slate-400 italic">暂无使用说明</p></div>
+            <div id="adminGuideEditor" class="hidden border-t border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/50 p-6 space-y-4">
+                <div class="flex items-center gap-2 text-purple-600 dark:text-purple-400 text-xs font-mono font-bold"><span class="w-2 h-2 bg-purple-600 rounded-full radar-pulse"></span>管理员编辑模式 · 支持HTML图文</div>
+                <textarea id="guideEditorTextarea" rows="6" class="w-full bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white rounded-xl p-4 text-sm font-mono focus:outline-none focus:border-purple-600 focus:ring-2 focus:ring-purple-500/20" placeholder="支持HTML标签..."></textarea>
+                <div class="flex justify-between items-center"><p class="text-slate-500 text-xs">💡 可使用 &lt;h3&gt;、&lt;p&gt;、&lt;img&gt;、&lt;ul&gt; 等标签</p>
+                    <div class="flex gap-3"><button onclick="previewGuide()" class="bg-slate-200 dark:bg-slate-800 hover:bg-slate-300 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 text-xs px-4 py-2.5 rounded-xl font-bold transition-all border border-slate-300 dark:border-slate-700">👁️ 预览</button>
+                    <button onclick="saveGuideForCurrentTool()" class="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white text-xs px-5 py-2.5 rounded-xl font-bold shadow-md transition-all">💾 保存说明</button></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== 登录模态 ===== -->
+    <div id="login-overlay" class="fixed inset-0 bg-slate-900/40 dark:bg-black/60 backdrop-blur-md z-[70] hidden flex items-center justify-center p-4 transition-all">
+        <div class="bg-white/95 dark:bg-slate-900/95 border border-white/80 dark:border-slate-800 rounded-3xl shadow-2xl w-full max-w-md p-7 modal-anime">
+            <div class="flex justify-between items-center mb-5"><h3 class="text-lg font-bold text-slate-900 dark:text-white font-mono">登录 / 身份识别</h3>
+                <button onclick="closeLoginModal()" class="text-slate-500 hover:text-slate-900 dark:hover:text-white bg-slate-200/80 dark:bg-slate-800 rounded-xl p-2 transition-all"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/></svg></button>
+            </div>
+            <div class="flex gap-2 mb-5 bg-black/5 dark:bg-white/5 p-1 rounded-xl">
+                <button id="loginTabUser" onclick="setLoginMode('user')" class="flex-1 py-2 rounded-lg text-xs font-bold transition-all bg-white dark:bg-slate-800 text-slate-900 dark:text-white shadow-sm">用户登录</button>
+                <button id="loginTabAdmin" onclick="setLoginMode('admin')" class="flex-1 py-2 rounded-lg text-xs font-bold transition-all text-slate-600 dark:text-slate-400">管理员登录</button>
+            </div>
+            <form onsubmit="handleLogin(event)" class="space-y-4">
+                <div><label class="block text-xs font-bold text-slate-600 dark:text-slate-400 mb-1.5">用户名 *</label><input id="loginUser" required type="text" placeholder="如：张三" class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white rounded-xl p-3 text-sm focus:outline-none focus:border-purple-600"></div>
+                <div><label class="block text-xs font-bold text-slate-600 dark:text-slate-400 mb-1.5" id="loginPassLabel">通行码（可选）</label><input id="loginPass" type="password" placeholder="如已配置通行码请填写" class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white rounded-xl p-3 text-sm focus:outline-none focus:border-purple-600"></div>
+                <button type="submit" class="w-full bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white text-sm py-3 rounded-xl font-bold shadow-md transition-all active:scale-95">登 录</button>
+            </form>
+            <p class="text-[11px] text-slate-400 mt-3 leading-relaxed" id="loginHint">用户登录用于提交工具（仅自己可见署名）；管理员登录用于审批与删除。</p>
+        </div>
+    </div>
+
+    <!-- ===== 提交工具模态 ===== -->
+    <div id="submit-overlay" class="fixed inset-0 bg-slate-900/40 dark:bg-black/60 backdrop-blur-md z-[70] hidden flex items-center justify-center p-4 transition-all">
+        <div class="bg-white/95 dark:bg-slate-900/95 border border-white/80 dark:border-slate-800 rounded-3xl shadow-2xl w-full max-w-xl p-7 modal-anime max-h-[92vh] overflow-y-auto">
+            <div class="flex justify-between items-center mb-5 border-b border-slate-200 dark:border-slate-800 pb-3"><h3 class="text-lg font-bold text-slate-900 dark:text-white font-mono">提交新工具</h3>
+                <button onclick="closeSubmitModal()" class="text-slate-500 hover:text-slate-900 dark:hover:text-white bg-slate-200/80 dark:bg-slate-800 rounded-xl p-2 transition-all"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/></svg></button>
+            </div>
+            <form id="submitForm" onsubmit="handleSubmit(event)" class="space-y-4">
+                <div><label class="block text-xs font-bold text-slate-600 dark:text-slate-400 mb-1.5">类型 *</label>
+                    <select id="subType" onchange="adaptSubType()" class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white rounded-xl p-3 text-sm focus:outline-none focus:border-purple-600">
+                        <option value="html">Web 在线网页版（填 URL）</option>
+                        <option value="exe">.exe 桌面端（填下载链接）</option>
+                    </select></div>
+                <div><label class="block text-xs font-bold text-slate-600 dark:text-slate-400 mb-1.5">名称 *</label><input id="subName" required type="text" placeholder="工具名称" class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white rounded-xl p-3 text-sm focus:outline-none focus:border-purple-600"></div>
+                <div><label class="block text-xs font-bold text-slate-600 dark:text-slate-400 mb-1.5">描述 *</label><textarea id="subDesc" required rows="2" placeholder="简要用途" class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white rounded-xl p-3 text-sm focus:outline-none focus:border-purple-600"></textarea></div>
+                <div><label class="block text-xs font-bold text-slate-600 dark:text-slate-400 mb-1.5">图标 URL（可选）</label><input id="subIcon" type="text" placeholder="留空用首字母" class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white rounded-xl p-3 text-sm focus:outline-none focus:border-purple-600"></div>
+                <div><label class="block text-xs font-bold text-slate-600 dark:text-slate-400 mb-1.5">作者（@名，可选）</label><input id="subAuthor" type="text" placeholder="@张三" class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white rounded-xl p-3 text-sm focus:outline-none focus:border-purple-600"></div>
+                <div><label id="subUrlLabel" class="block text-xs font-bold text-slate-600 dark:text-slate-400 mb-1.5">访问/下载地址（不传文件时必填）</label><input id="subUrl" type="text" placeholder="https://... 或留空改为上传文件" class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white rounded-xl p-3 text-sm focus:outline-none focus:border-purple-600"></div>
+                <div><label class="block text-xs font-bold text-slate-600 dark:text-slate-400 mb-1.5">上传文件（可选：.exe / .zip / 压缩包等）</label><input id="subFile" type="file" accept=".exe,.msi,.zip,.rar,.7z,.dmg,.deb,.apk,application/*" class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white rounded-xl p-2.5 text-sm focus:outline-none focus:border-purple-600"><p class="text-[11px] text-slate-400 mt-1.5 leading-relaxed">选了文件会直接存到仓库并生成下载链接，无需再填地址。未配置 R2 时单个文件 ≤ 45MB；配置了 R2 可上传更大文件。不传文件时请填上面的网址。两者都不填无法提交。</p></div>
+                <div><label class="block text-xs font-bold text-slate-600 dark:text-slate-400 mb-1.5">标签（逗号分隔）</label><input id="subTags" type="text" placeholder="效率, 数字化" class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white rounded-xl p-3 text-sm focus:outline-none focus:border-purple-600"></div>
+                <div class="pt-2 flex justify-end gap-3">
+                    <button type="button" onclick="closeSubmitModal()" class="bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 text-xs px-4 py-2.5 rounded-xl font-bold border border-slate-300 dark:border-slate-700">取消</button>
+                    <button type="submit" class="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white text-xs px-5 py-2.5 rounded-xl font-bold shadow-md active:scale-95 transition-all">提交审核</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- ===== 管理后台模态 ===== -->
+    <div id="dashboard-overlay" class="fixed inset-0 bg-slate-900/40 dark:bg-black/60 backdrop-blur-md z-[70] hidden flex items-center justify-center p-4 transition-all">
+        <div class="bg-white/95 dark:bg-slate-900/95 border border-white/80 dark:border-slate-800 rounded-3xl shadow-2xl w-full max-w-2xl p-7 modal-anime max-h-[92vh] flex flex-col">
+            <div class="flex justify-between items-center mb-4 border-b border-slate-200 dark:border-slate-800 pb-3">
+                <h3 class="text-lg font-bold text-slate-900 dark:text-white font-mono">🛠️ 管理后台</h3>
+                <button onclick="closeDashboard()" class="text-slate-500 hover:text-slate-900 dark:hover:text-white bg-slate-200/80 dark:bg-slate-800 rounded-xl p-2 transition-all"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/></svg></button>
+            </div>
+            <div class="flex gap-2 mb-4 bg-black/5 dark:bg-white/5 p-1 rounded-xl">
+                <button id="dashTabPending" onclick="setDashTab('pending')" class="flex-1 py-2 rounded-lg text-xs font-bold transition-all bg-white dark:bg-slate-800 text-slate-900 dark:text-white shadow-sm">待审核 (<span id="pendingCount">0</span>)</button>
+                <button id="dashTabLive" onclick="setDashTab('live')" class="flex-1 py-2 rounded-lg text-xs font-bold transition-all text-slate-600 dark:text-slate-400">已上线</button>
+            </div>
+            <div class="mb-3 text-center">
+                <p class="text-[11px] px-3 py-1.5 rounded-lg bg-slate-200/70 dark:bg-slate-700/60 text-slate-500 dark:text-slate-400 font-bold">原始数据来自 GitHub（只读）· 新增数据存于 R2</p>
+            </div>
+            <div id="dashBody" class="flex-1 overflow-y-auto space-y-3 pr-1"></div>
+        </div>
+    </div>
+
+    <!-- ===== Toast ===== -->
+    <div id="toast"></div>
+
+    <script>
+        // ============ 鉴权（前端）============
+        let authToken = localStorage.getItem('authToken') || '';
+        function parseToken() {
+            if (!authToken) return null;
+            try {
+                const p = authToken.split('.')[1].replace(/-/g, '+').replace(/_/g, '/');
+                const json = JSON.parse(decodeURIComponent(escape(atob(p))));
+                if (json.exp && Date.now() / 1000 > json.exp) { authToken = ''; localStorage.removeItem('authToken'); return null; }
+                return json;
+            } catch (e) { return null; }
+        }
+        let me = parseToken();
+        function isAdmin() { return !!(me && me.role === 'admin'); }
+        function isLoggedIn() { return !!me; }
+        // 鉴权拦截：返回 true 表示放行；否则弹出登录并提示
+        function requireAuth(role) {
+            if (!isLoggedIn()) { openLoginModal(); toast('请先登录'); return false; }
+            if (role === 'admin' && !isAdmin()) { toast('需要管理员权限'); return false; }
+            return true;
+        }
+        function authHeaders(skipContentType) { const h = { 'Authorization': 'Bearer ' + authToken }; if (!skipContentType) h['Content-Type'] = 'application/json'; return h; }
+        function escapeHtml(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])); }
+
+        function refreshUserArea() {
+            me = parseToken();
+            const btn = document.getElementById('navUserArea');
+            const btnM = document.getElementById('navUserAreaM');
+            const adminBtn = document.getElementById('navAdminBtn');
+            const adminBtnM = document.getElementById('navAdminBtnM');
+            const html = isLoggedIn()
+                ? `<span class="flex items-center gap-2 bg-white/70 dark:bg-slate-800/70 border border-white/80 dark:border-slate-700 px-3 py-2 rounded-xl text-xs font-bold"><span>👤 ${me.sub}</span><button onclick="logout()" class="text-rose-500 hover:text-rose-600 underline">退出</button></span>`
+                : `登录`;
+            if (isLoggedIn()) {
+                btn.outerHTML = `<span id="navUserArea" class="flex items-center gap-2 bg-white/70 dark:bg-slate-800/70 border border-white/80 dark:border-slate-700 px-3 py-2 rounded-xl text-xs font-bold"><span>👤 ${me.sub}</span><button onclick="logout()" class="text-rose-500 hover:text-rose-600 underline">退出</button></span>`;
+                btnM.outerHTML = `<span id="navUserAreaM" class="block w-full text-left bg-white/70 dark:bg-slate-800/70 border border-white/80 dark:border-slate-700 px-3 py-2 rounded-xl text-sm font-bold"><span>👤 ${me.sub}</span> <button onclick="logout()" class="text-rose-500 underline">退出</button></span>`;
+            } else {
+                btn.outerHTML = `<button id="navUserArea" onclick="openLoginModal()" class="bg-slate-900 dark:bg-sky-500 text-white dark:text-slate-950 px-4 py-2 rounded-xl text-xs font-bold transition-all shadow-sm">登录</button>`;
+                btnM.outerHTML = `<button id="navUserAreaM" onclick="openLoginModal()" class="block w-full text-left bg-slate-900 dark:bg-sky-500 text-white dark:text-slate-950 px-3 py-2 rounded-xl text-sm font-bold">登录</button>`;
+            }
+            const showAdmin = isAdmin();
+            adminBtn.classList.toggle('hidden', !showAdmin);
+            adminBtnM.classList.toggle('hidden', !showAdmin);
+        }
+
+        function logout() {
+            authToken = ''; localStorage.removeItem('authToken'); me = null;
+            closeDashboard(); closeSubmitModal(); closeLoginModal();
+            toast('已退出登录'); refreshUserArea();
+        }
+
+        // ============ 主题 ============
+        function initTheme() {
+            const saved = localStorage.getItem('theme');
+            const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+            if (saved === 'dark' || (!saved && prefersDark)) {
+                document.documentElement.classList.add('dark');
+                document.getElementById('themeIcon').innerText = '☀️';
+            }
+        }
+        function toggleDarkMode() {
+            const isDark = document.documentElement.classList.toggle('dark');
+            localStorage.setItem('theme', isDark ? 'dark' : 'light');
+            document.getElementById('themeIcon').innerText = isDark ? '☀️' : '🌙';
+        }
+
+        // ============ 数据 ============
+        const defaultAboutContent = `<h2>关于办公提效工具集成平台</h2><p>这是一个专为现代数字办公打造的高效工具聚合枢纽。</p><h3>平台核心优势</h3><ul><li><strong>高频便携（EXE）：</strong> 精选轻量化免安装绿色桌面软件，一键下载直达。</li><li><strong>云端协同（Web）：</strong> 聚合现代化 Web 在线协同应用，支持内嵌沙盒即时预览。</li></ul><p><i>使用过程中发现问题，请及时与我们联系</i></p>`;
+        let aboutContent = defaultAboutContent;
+        let toolsData = [];
+        let pendingData = [];
+        let isLoading = false;
+
+        const grid = document.getElementById('cardGrid');
+        const searchInput = document.getElementById('searchInput');
+        const filterBtns = document.querySelectorAll('.filter-btn');
+        const totalCount = document.getElementById('totalCount');
+        const favCount = document.getElementById('favCount');
+        const favToggle = document.getElementById('favToggle');
+        let isFavViewActive = false;
+
+        const modal = document.getElementById('modal-overlay');
+        const modalContainer = document.getElementById('modalContainer');
+        const modalTitle = document.getElementById('modal-title');
+        const previewIframe = document.getElementById('preview-iframe');
+        const externalLink = document.getElementById('external-link');
+        let isModalMaximized = false;
+
+        const guideOverlay = document.getElementById('guide-overlay');
+        const guideTitle = document.getElementById('guide-title');
+        const guideContentArea = document.getElementById('guide-content-area');
+        const adminGuideEditor = document.getElementById('adminGuideEditor');
+        const guideEditorTextarea = document.getElementById('guideEditorTextarea');
+        let currentGuideToolId = null;
+
+        const aboutOverlay = document.getElementById('about-overlay');
+        const aboutContentArea = document.getElementById('about-content-area');
+        const adminAboutEditor = document.getElementById('adminAboutEditor');
+        const aboutEditorTextarea = document.getElementById('aboutEditorTextarea');
+
+        // 收藏（本地偏好）
+        function loadFavorites() {
+            const stored = localStorage.getItem('favTools');
+            if (stored) { const ids = JSON.parse(stored); toolsData.forEach(i => i.favorite = ids.includes(i.id)); }
+        }
+        function saveFavorites() { localStorage.setItem('favTools', JSON.stringify(toolsData.filter(i => i.favorite).map(i => i.id))); }
+
+        // ============ 加载工具（实时，no-store + 兜底静态）============
+        async function loadTools() {
+            showLoading();
+            try {
+                const res = await fetch('/api/tools', { cache: 'no-store' });
+                if (!res.ok) throw new Error('api');
+                const data = await res.json();
+                aboutContent = data.about || defaultAboutContent;
+                toolsData = (data.tools || []).filter(t => (t.status || 'approved') === 'approved');
+            } catch (e) {
+                try {
+                    const res2 = await fetch('./tools.json', { cache: 'no-store' });
+                    const json = await res2.json();
+                    aboutContent = json.about || defaultAboutContent;
+                    toolsData = (json.tools || []).filter(t => (t.status || 'approved') === 'approved');
+                } catch (e2) { toolsData = []; toast('数据加载失败，已显示空列表'); }
+            }
+            if (isAdmin()) await loadPending();
+            hideLoading();
+            renderTools();
+        }
+        async function loadPending() {
+            try {
+                const res = await fetch('/api/pending', { headers: authHeaders(), cache: 'no-store' });
+                pendingData = res.ok ? await res.json() : [];
+            } catch (e) { pendingData = []; }
+        }
+
+        // ============ Toast ============
+        let toastTimer = null;
+        function toast(msg) {
+            const t = document.getElementById('toast');
+            t.innerText = msg; t.classList.add('show');
+            clearTimeout(toastTimer);
+            toastTimer = setTimeout(() => t.classList.remove('show'), 2400);
+        }
+
+        // ============ 渲染 ============
+        function showLoading() {
+            isLoading = true;
+            grid.innerHTML = Array.from({ length: 6 }).map(() => `
+                <div class="skeleton p-6" style="height:240px">
+                    <div style="display:flex;gap:.75rem;margin-bottom:1rem"><div style="width:44px;height:44px;border-radius:12px;background:rgba(148,163,184,.3)"></div><div style="flex:1"><div style="height:14px;width:60%;background:rgba(148,163,184,.3);border-radius:6px;margin-bottom:8px"></div><div style="height:10px;width:40%;background:rgba(148,163,184,.2);border-radius:6px"></div></div></div>
+                    <div style="height:12px;width:100%;background:rgba(148,163,184,.2);border-radius:6px;margin-bottom:8px"></div>
+                    <div style="height:12px;width:80%;background:rgba(148,163,184,.2);border-radius:6px;margin-bottom:8px"></div>
+                    <div style="height:32px;width:50%;background:rgba(148,163,184,.25);border-radius:10px;margin-top:1.5rem"></div>
+                </div>`).join('');
+        }
+        function hideLoading() { isLoading = false; }
+
+        function getActiveFilterType() {
+            if (isFavViewActive) return 'favorite';
+            const active = document.querySelector('.filter-btn.bg-white, .filter-btn.dark\\:bg-slate-800');
+            return active ? active.dataset.type : 'all';
+        }
+
+        function renderTools(filterType = 'all', keyword = '') {
+            if (isLoading) return;
+            let filtered = toolsData;
+            if (filterType === 'favorite') filtered = filtered.filter(i => i.favorite === true);
+            else if (filterType !== 'all') filtered = filtered.filter(i => i.type === filterType);
+            if (keyword.trim() !== '') {
+                const kw = keyword.toLowerCase();
+                filtered = filtered.filter(i => i.name.toLowerCase().includes(kw) || i.desc.toLowerCase().includes(kw) || i.tags.some(t => t.toLowerCase().includes(kw)));
+            }
+            favCount.innerText = toolsData.filter(i => i.favorite).length;
+            totalCount.innerText = toolsData.length < 10 ? `0${toolsData.length}` : toolsData.length;
+
+            if (filtered.length === 0) {
+                grid.innerHTML = `<div class="col-span-full text-center py-24 text-slate-500 dark:text-slate-400 font-mono text-sm tracking-wider">${keyword.trim() ? 'NO_MATCHED // 无匹配工具' : '暂无工具，欢迎提交'}</div>`;
+                return;
+            }
+
+            grid.innerHTML = filtered.map(item => {
+                const iconHtml = item.icon && item.icon.trim() !== ''
+                    ? `<img src="${item.icon}" alt="${item.name}" loading="lazy" onerror="this.style.display='none';this.parentElement.textContent='${item.name.charAt(0).toUpperCase()}'">`
+                    : `${item.name.charAt(0).toUpperCase()}`;
+                const authorDisplay = item.author && item.author.trim() !== '' ? `<div class="tool-author"><span class="at-symbol">@</span>${item.author.replace(/^@/, '')}</div>` : '';
+                const tagHtml = item.tags.map(tag => `<span class="${(item.type === 'exe') ? 'tag-exe' : 'tag-web'}">${tag}</span>`).join('');
+                const effUrl = item.fileUrl || item.url || '#';
+                return `
+                    <div class="modern-card p-[1px] group relative" onmousemove="handleCardMouseMove(event, this)">
+                        <div class="card-inner p-6 flex flex-col justify-between relative">
+                            ${isAdmin() && item.source !== 'github' ? `<button onclick="deleteTool(${item.id})" class="absolute top-3 right-3 opacity-0 group-hover:opacity-100 bg-white dark:bg-slate-800 hover:bg-rose-100 dark:hover:bg-rose-900/50 text-slate-600 dark:text-slate-300 hover:text-rose-600 dark:hover:text-rose-400 border border-slate-300 dark:border-slate-700 transition-all px-2.5 py-1 text-xs font-mono rounded-lg z-20 shadow-sm" title="删除">✕ 删除</button>` : (isAdmin() && item.source === 'github' ? `<span class="absolute top-3 right-3 text-[10px] px-2 py-1 rounded-lg bg-slate-200/70 dark:bg-slate-700/70 text-slate-500 dark:text-slate-400 font-mono z-20">原·GitHub</span>` : '')}
+                            <div>
+                                <div class="card-header">
+                                    <div class="tool-icon">${iconHtml}</div>
+                                    <div class="name-area"><div class="tool-name">${item.name}</div>${authorDisplay}</div>
+                                    <div class="tag-group">${tagHtml}</div>
+                                </div>
+                                <div class="text-slate-600 dark:text-slate-400 text-sm leading-relaxed mt-2 mb-3 font-normal">${item.desc}</div>
+                            </div>
+                            <div class="flex items-center justify-between pt-5 border-t border-slate-300/40 dark:border-slate-800/80">
+                                <div class="flex items-center gap-2">
+                                    <button onclick="toggleFavorite(${item.id})" class="favorite-btn p-2 bg-white/70 dark:bg-slate-800/70 hover:bg-white dark:hover:bg-slate-800 rounded-xl border border-white/80 dark:border-slate-700/60 transition-all shadow-sm focus:outline-none" data-id="${item.id}">
+                                        <svg class="w-4 h-4 transition-all duration-200 ${item.favorite ? 'text-rose-500 fill-rose-500 scale-110' : 'text-slate-400 dark:text-slate-500 hover:text-rose-500'}" viewBox="0 0 24 24" fill="${item.favorite ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+                                    </button>
+                                    <span class="px-2.5 py-1 text-[10px] font-bold font-mono rounded-lg bg-white/70 dark:bg-slate-800/70 text-slate-700 dark:text-slate-300 border border-white/80 dark:border-slate-700/60 shadow-sm">${item.type === 'exe' ? 'EXE' : 'WEB'}</span>
+                                    <button class="guide-text-link" onclick="openGuideModal(${item.id})">查看使用说明</button>
+                                </div>
+                                <div>
+                                    ${item.type === 'exe'
+                                        ? `<a href="${escapeHtml(effUrl)}" ${effUrl === '#' ? 'onclick="toast(\'请等待管理员补全下载链接\');return false;"' : 'download'} class="inline-block bg-slate-900 dark:bg-sky-500 hover:bg-slate-800 dark:hover:bg-sky-400 text-white dark:text-slate-950 text-xs font-bold px-5 py-2 rounded-xl shadow-md active:scale-95 transition-all duration-300">${item.fileName ? '下载：' + escapeHtml(item.fileName.slice(0, 16)) : '下载软件'}</a>`
+                                        : `<button onclick="openModal('${escapeHtml(item.name)}', '${escapeHtml(effUrl)}')" class="bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-100 text-xs font-bold px-5 py-2 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm active:scale-95 transition-all duration-300">在线使用</button>`}
+                                </div>
+                            </div>
+                        </div>
+                    </div>`;
+            }).join('');
+        }
+
+        function handleCardMouseMove(e, card) {
+            const r = card.getBoundingClientRect();
+            card.style.setProperty('--mouse-x', `${e.clientX - r.left}px`);
+            card.style.setProperty('--mouse-y', `${e.clientY - r.top}px`);
+        }
+
+        // ============ 收藏 ============
+        function toggleFavorite(id) {
+            const item = toolsData.find(t => t.id === id); if (!item) return;
+            item.favorite = !item.favorite; saveFavorites();
+            if (isFavViewActive && !item.favorite) renderTools('favorite', searchInput.value);
+            else renderTools(getActiveFilterType(), searchInput.value);
+        }
+
+        // ============ 在线预览 ============
+        function openModal(name, url) {
+            modalTitle.innerText = `[CONNECTED] // ${name.toUpperCase()}`;
+            previewIframe.src = url; externalLink.href = url;
+            modal.classList.remove('hidden'); document.body.style.overflow = 'hidden';
+        }
+        function toggleModalSize() {
+            const zIcon = document.getElementById('zoom-icon'); const zText = document.getElementById('zoom-text');
+            isModalMaximized = !isModalMaximized;
+            if (isModalMaximized) { modalContainer.classList.remove('max-w-7xl', 'h-[88vh]'); modalContainer.classList.add('max-w-full', 'h-screen', 'rounded-none'); zIcon.innerText = '💠'; zText.innerText = '复原'; }
+            else { modalContainer.classList.remove('max-w-full', 'h-screen', 'rounded-none'); modalContainer.classList.add('max-w-7xl', 'h-[88vh]'); zIcon.innerText = '🔳'; zText.innerText = '全屏'; }
+        }
+        document.getElementById('close-modal').onclick = () => { modal.classList.add('hidden'); previewIframe.src = ''; document.body.style.overflow = 'auto'; if (isModalMaximized) toggleModalSize(); };
+
+        // ============ 使用说明 ============
+        function openGuideModal(toolId) {
+            const tool = toolsData.find(t => t.id === toolId); if (!tool) return;
+            currentGuideToolId = toolId;
+            guideTitle.innerText = `${tool.name} · 使用说明`;
+            guideContentArea.innerHTML = tool.guide && tool.guide.trim() !== ''
+                ? tool.guide
+                : '<div class="text-center py-12 text-slate-400 dark:text-slate-500"><p class="text-2xl mb-2">📭</p><p class="italic">暂无详细说明</p></div>';
+            if (isAdmin() && tool.source !== 'github') { adminGuideEditor.classList.remove('hidden'); guideEditorTextarea.value = tool.guide || ''; }
+            else { adminGuideEditor.classList.add('hidden'); if (isAdmin()) guideContentArea.innerHTML += '<div class="mt-4 text-center text-[11px] text-slate-400">原 GitHub 数据不可在此编辑，需到 GitHub 仓库修改。</div>'; }
+            guideOverlay.classList.remove('hidden'); document.body.style.overflow = 'hidden';
+        }
+        function closeGuideModal() { guideOverlay.classList.add('hidden'); document.body.style.overflow = 'auto'; currentGuideToolId = null; }
+        function previewGuide() { if (currentGuideToolId) guideContentArea.innerHTML = guideEditorTextarea.value || '<p class="text-slate-400 italic">预览为空</p>'; }
+        async function saveGuideForCurrentTool() {
+            if (!requireAuth('admin') || !currentGuideToolId) return;
+            const tool = toolsData.find(t => t.id === currentGuideToolId); if (!tool) return;
+            tool.guide = guideEditorTextarea.value;
+            guideContentArea.innerHTML = tool.guide || '<p class="text-slate-400 italic">暂无详细说明。</p>';
+            try {
+                const res = await fetch('/api/admin', { method: 'POST', headers: authHeaders(), body: JSON.stringify({ action: 'guide', id: currentGuideToolId, guide: tool.guide }), cache: 'no-store' });
+                const d = await res.json();
+                toast(res.ok && d.success ? '说明已保存并同步' : (d.error || '保存失败'));
+            } catch (e) { toast('网络错误'); }
+        }
+
+        // ============ 关于我们 ============
+        function openAboutModal() {
+            aboutContentArea.innerHTML = aboutContent;
+            if (isAdmin()) { adminAboutEditor.classList.remove('hidden'); aboutEditorTextarea.value = aboutContent; }
+            else adminAboutEditor.classList.add('hidden');
+            aboutOverlay.classList.remove('hidden'); document.body.style.overflow = 'hidden';
+        }
+        function closeAboutModal() { aboutOverlay.classList.add('hidden'); document.body.style.overflow = 'auto'; }
+        function previewAbout() { aboutContentArea.innerHTML = aboutEditorTextarea.value || '<p class="text-slate-400 italic">预览为空</p>'; }
+        async function saveAboutContent() {
+            if (!requireAuth('admin')) return;
+            aboutContent = aboutEditorTextarea.value;
+            aboutContentArea.innerHTML = aboutContent;
+            try {
+                await fetch('/api/admin', { method: 'POST', headers: authHeaders(), body: JSON.stringify({ action: 'about', about: aboutContent }), cache: 'no-store' });
+                toast('关于我们已保存并同步');
+            } catch (e) { toast('保存失败'); }
+        }
+
+        // ============ 登录 ============
+        let loginMode = 'user';
+        function openLoginModal() { document.getElementById('login-overlay').classList.remove('hidden'); document.body.style.overflow = 'hidden'; setLoginMode(loginMode); }
+        function closeLoginModal() { document.getElementById('login-overlay').classList.add('hidden'); document.body.style.overflow = 'auto'; }
+        function setLoginMode(mode) {
+            loginMode = mode;
+            const u = document.getElementById('loginTabUser'); const a = document.getElementById('loginTabAdmin');
+            const label = document.getElementById('loginPassLabel'); const hint = document.getElementById('loginHint');
+            if (mode === 'admin') {
+                a.className = 'flex-1 py-2 rounded-lg text-xs font-bold transition-all bg-white dark:bg-slate-800 text-slate-900 dark:text-white shadow-sm';
+                u.className = 'flex-1 py-2 rounded-lg text-xs font-bold transition-all text-slate-600 dark:text-slate-400';
+                label.innerText = '管理员密钥 *'; document.getElementById('loginPass').placeholder = '管理员密钥';
+                hint.innerText = '管理员拥有审批（通过/驳回）与删除权限。';
+            } else {
+                u.className = 'flex-1 py-2 rounded-lg text-xs font-bold transition-all bg-white dark:bg-slate-800 text-slate-900 dark:text-white shadow-sm';
+                a.className = 'flex-1 py-2 rounded-lg text-xs font-bold transition-all text-slate-600 dark:text-slate-400';
+                label.innerText = '通行码（可选）'; document.getElementById('loginPass').placeholder = '如已配置通行码请填写';
+                hint.innerText = '用户登录用于提交工具；若未配置通行码，填写用户名即可。';
+            }
+        }
+        async function handleLogin(e) {
+            e.preventDefault();
+            const username = document.getElementById('loginUser').value.trim();
+            const password = document.getElementById('loginPass').value;
+            if (!username) { toast('请输入用户名'); return; }
+            try {
+                const res = await fetch('/api/login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ username, password }) });
+                const d = await res.json();
+                if (res.ok && d.success) {
+                    authToken = d.token; localStorage.setItem('authToken', authToken); me = parseToken();
+                    closeLoginModal(); refreshUserArea(); toast(`欢迎，${d.username}（${d.role === 'admin' ? '管理员' : '用户'}）`);
+                    await loadTools();
+                    if (isAdmin()) openDashboard();
+                } else { toast(d.message || '登录失败'); }
+            } catch (err) { toast('网络错误，请确认已部署 Functions'); }
+        }
+
+        // ============ 提交工具 ============
+        function openSubmitModal() {
+            if (!requireAuth('user')) return;
+            document.getElementById('submit-overlay').classList.remove('hidden'); document.body.style.overflow = 'hidden';
+        }
+        function closeSubmitModal() { document.getElementById('submit-overlay').classList.add('hidden'); document.body.style.overflow = 'auto'; }
+        function adaptSubType() {
+            const type = document.getElementById('subType').value;
+            document.getElementById('subUrlLabel').innerText = type === 'exe' ? '软件下载链接（不传文件时必填）' : '网页访问地址 URL（不传文件时必填）';
+        }
+        async function handleSubmit(e) {
+            e.preventDefault();
+            if (!requireAuth('user')) return;
+            const fileInput = document.getElementById('subFile');
+            const file = fileInput.files && fileInput.files[0] ? fileInput.files[0] : null;
+            const url = document.getElementById('subUrl').value.trim();
+            if (!file && !url) { toast('请填写访问/下载地址，或选择要上传的文件'); return; }
+            const fd = new FormData();
+            fd.append('name', document.getElementById('subName').value.trim());
+            fd.append('desc', document.getElementById('subDesc').value.trim());
+            fd.append('type', document.getElementById('subType').value);
+            fd.append('icon', document.getElementById('subIcon').value.trim());
+            fd.append('author', document.getElementById('subAuthor').value.trim());
+            fd.append('url', url);
+            fd.append('tags', document.getElementById('subTags').value);
+            fd.append('guide', '');
+            if (file) fd.append('file', file);
+            try {
+                const res = await fetch('/api/submit', { method: 'POST', headers: authHeaders(true), body: fd, cache: 'no-store' });
+                const d = await res.json();
+                if (res.ok && d.success) {
+                    closeSubmitModal(); document.getElementById('submitForm').reset(); document.getElementById('subFile').value = ''; adaptSubType();
+                    toast(d.status === 'pending' ? '已提交，等待管理员审核' : '已直接上线');
+                    await loadTools();
+                } else { toast(d.error || '提交失败'); }
+            } catch (err) { toast('网络错误'); }
+        }
+
+        // ============ 管理后台 ============
+        function openDashboard() { if (!requireAuth('admin')) return; document.getElementById('dashboard-overlay').classList.remove('hidden'); document.body.style.overflow = 'hidden'; setDashTab('pending'); }
+        function closeDashboard() { document.getElementById('dashboard-overlay').classList.add('hidden'); document.body.style.overflow = 'auto'; }
+        function setDashTab(tab) {
+            const p = document.getElementById('dashTabPending'); const l = document.getElementById('dashTabLive');
+            if (tab === 'pending') { p.className = 'flex-1 py-2 rounded-lg text-xs font-bold transition-all bg-white dark:bg-slate-800 text-slate-900 dark:text-white shadow-sm'; l.className = 'flex-1 py-2 rounded-lg text-xs font-bold transition-all text-slate-600 dark:text-slate-400'; }
+            else { l.className = 'flex-1 py-2 rounded-lg text-xs font-bold transition-all bg-white dark:bg-slate-800 text-slate-900 dark:text-white shadow-sm'; p.className = 'flex-1 py-2 rounded-lg text-xs font-bold transition-all text-slate-600 dark:text-slate-400'; }
+            renderDashboard(tab);
+        }
+        function renderDashboard(tab) {
+            const body = document.getElementById('dashBody');
+            document.getElementById('pendingCount').innerText = pendingData.length;
+            if (tab === 'pending') {
+                if (pendingData.length === 0) { body.innerHTML = '<div class="text-center py-12 text-slate-400 italic">暂无待审核工具</div>'; return; }
+                body.innerHTML = pendingData.map(t => `
+                    <div class="border border-slate-200 dark:border-slate-700 rounded-2xl p-4 bg-white/60 dark:bg-slate-800/40">
+                        <div class="flex items-center justify-between gap-3">
+                            <div><div class="font-bold text-slate-900 dark:text-white">${t.name} <span class="text-[10px] px-2 py-0.5 rounded bg-sky-100 dark:bg-sky-900 text-sky-700 dark:text-sky-300">${t.type === 'exe' ? 'EXE' : 'WEB'}</span></div>
+                            <div class="text-xs text-slate-500 mt-1">提交人：${t.submittedBy || '未知'} · ${t.submittedAt ? new Date(t.submittedAt).toLocaleString() : ''}</div></div>
+                        </div>
+                        <div class="text-sm text-slate-600 dark:text-slate-300 mt-2">${t.desc}</div>
+                        <div class="flex gap-2 mt-3">
+                            <button onclick="adminReview('approve', ${t.id})" class="bg-emerald-500 hover:bg-emerald-600 text-white text-xs px-4 py-2 rounded-xl font-bold">✓ 通过</button>
+                            <button onclick="adminReview('reject', ${t.id})" class="bg-rose-500 hover:bg-rose-600 text-white text-xs px-4 py-2 rounded-xl font-bold">✕ 驳回</button>
+                        </div>
+                    </div>`).join('');
+            } else {
+                if (toolsData.length === 0) { body.innerHTML = '<div class="text-center py-12 text-slate-400 italic">暂无已上线工具</div>'; return; }
+                body.innerHTML = toolsData.map(t => `
+                    <div class="flex items-center justify-between gap-3 border border-slate-200 dark:border-slate-700 rounded-2xl p-4 bg-white/60 dark:bg-slate-800/40">
+                        <div class="min-w-0"><div class="font-bold text-slate-900 dark:text-white truncate flex items-center gap-2">${t.name} ${t.source === 'github' ? '<span class="text-[10px] px-2 py-0.5 rounded bg-slate-200 dark:bg-slate-700 text-slate-500 font-mono">原·GitHub</span>' : ''}</div><div class="text-xs text-slate-500 mt-1">${t.author || ''}</div></div>
+                        ${t.source !== 'github' ? `<button onclick="deleteTool(${t.id})" class="bg-rose-500 hover:bg-rose-600 text-white text-xs px-4 py-2 rounded-xl font-bold shrink-0">删除</button>` : `<span class="text-[10px] text-slate-400 shrink-0">只读</span>`}
+                    </div>`).join('');
+            }
+        }
+        async function adminReview(action, id) {
+            if (!requireAuth('admin')) return;
+            try {
+                const res = await fetch('/api/admin', { method: 'POST', headers: authHeaders(), body: JSON.stringify({ action, id }), cache: 'no-store' });
+                const d = await res.json();
+                if (res.ok && d.success) { toast(action === 'approve' ? '已通过并上线' : '已驳回'); await loadTools(); if (isAdmin()) await loadPending(); renderDashboard('pending'); }
+                else toast(d.error || '操作失败');
+            } catch (e) { toast('网络错误'); }
+        }
+        async function deleteTool(id) {
+            if (!requireAuth('admin')) return;
+            if (!confirm('确定删除该工具？（仅删除 R2 中的新增数据，GitHub 原始数据不会被改动）')) return;
+            try {
+                const res = await fetch('/api/admin', { method: 'POST', headers: authHeaders(), body: JSON.stringify({ action: 'delete', id }), cache: 'no-store' });
+                const d = await res.json();
+                if (res.ok && d.success) { toast('已删除'); await loadTools(); if (isAdmin()) await loadPending(); renderDashboard('live'); }
+                else toast(d.error || '删除失败');
+            } catch (e) { toast('网络错误'); }
+        }
+
+        // ============ 汉堡菜单 ============
+        function toggleHamburger() { document.getElementById('hamburgerMenu').classList.toggle('hidden'); }
+
+        // ============ 事件绑定 ============
+        favToggle.addEventListener('click', function () {
+            isFavViewActive = !isFavViewActive;
+            const activeBtn = "filter-btn shrink-0 bg-white dark:bg-slate-800 text-slate-900 dark:text-white shadow-sm px-3 md:px-4 py-1.5 rounded-lg text-xs font-bold transition-all";
+            const normalBtn = "filter-btn shrink-0 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white px-3 md:px-4 py-1.5 rounded-lg text-xs font-bold transition-all";
+            if (isFavViewActive) {
+                document.getElementById('favToggleText').innerText = '返回'; document.getElementById('favToggleIcon').classList.add('text-rose-500', 'fill-rose-500/20', 'rotate-180');
+                filterBtns.forEach(b => b.className = normalBtn); renderTools('favorite', searchInput.value);
+            } else {
+                document.getElementById('favToggleText').innerText = '收藏'; document.getElementById('favToggleIcon').classList.remove('text-rose-500', 'fill-rose-500/20', 'rotate-180');
+                document.querySelector('.filter-btn[data-type="all"]').className = activeBtn; renderTools('all', searchInput.value);
+            }
+        });
+        filterBtns.forEach(btn => btn.addEventListener('click', function () {
+            isFavViewActive = false; document.getElementById('favToggleText').innerText = '收藏'; document.getElementById('favToggleIcon').classList.remove('text-rose-500', 'fill-rose-500/20', 'rotate-180');
+            filterBtns.forEach(b => b.className = "filter-btn shrink-0 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white px-3 md:px-4 py-1.5 rounded-lg text-xs font-bold transition-all");
+            this.className = "filter-btn shrink-0 bg-white dark:bg-slate-800 text-slate-900 dark:text-white shadow-sm px-3 md:px-4 py-1.5 rounded-lg text-xs font-bold transition-all";
+            renderTools(this.dataset.type, searchInput.value);
+        }));
+        searchInput.addEventListener('input', function () { renderTools(getActiveFilterType(), this.value); });
+        modal.addEventListener('click', (e) => { if (e.target === modal) document.getElementById('close-modal').click(); });
+        guideOverlay.addEventListener('click', (e) => { if (e.target === guideOverlay) closeGuideModal(); });
+        aboutOverlay.addEventListener('click', (e) => { if (e.target === aboutOverlay) closeAboutModal(); });
+        document.addEventListener('keydown', (e) => {
+            if (e.key !== 'Escape') return;
+            if (!aboutOverlay.classList.contains('hidden')) closeAboutModal();
+            if (!guideOverlay.classList.contains('hidden')) closeGuideModal();
+            if (!modal.classList.contains('hidden')) document.getElementById('close-modal').click();
+            if (!document.getElementById('login-overlay').classList.contains('hidden')) closeLoginModal();
+            if (!document.getElementById('submit-overlay').classList.contains('hidden')) closeSubmitModal();
+            if (!document.getElementById('dashboard-overlay').classList.contains('hidden')) closeDashboard();
+        });
+
+        // ============ 全局暴露 ============
+        Object.assign(window, { toggleDarkMode, handleCardMouseMove, openAboutModal, closeAboutModal, previewAbout, saveAboutContent, openGuideModal, closeGuideModal, previewGuide, saveGuideForCurrentTool, openModal, toggleModalSize, toggleFavorite, openLoginModal, closeLoginModal, setLoginMode, handleLogin, openSubmitModal, closeSubmitModal, adaptSubType, handleSubmit, openDashboard, closeDashboard, setDashTab, adminReview, deleteTool, toggleHamburger, logout });
+
+        // ============ 启动 ============
+        initTheme();
+        refreshUserArea();
+        loadTools();
+    </script>
+</body>
+</html>

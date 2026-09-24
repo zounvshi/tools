@@ -1,0 +1,13 @@
+# Cloudflare Pages 静态资源缓存策略（放在仓库根目录，与 index.html 同级）
+# 浏览器/代理即便直接访问这两个静态文件也不缓存，彻底规避陈旧数据问题。
+# 真正的数据读取走 /api/*（Functions 已在响应头设 no-store），本文件为防御性兜底。
+
+/tools.json
+  Cache-Control: no-store
+
+/pending.json
+  Cache-Control: no-store
+
+# 站点本身：部署即失效，给一个较短的公共缓存即可
+/*
+  Cache-Control: public, max-age=300
