@@ -86,7 +86,7 @@
         "内容优化"
       ],
       "url": "https://hiagent.hengrui.com/product/llm/chat/d70fnr6lvndc72vq7vrg",
-      "guide": "工作内容发给助手，输出工作内容和工作成果2部分内容",
+      "guide": "",
       "icon": "/icon/日志.png",
       "author": "@管理员",
       "favorite": false
@@ -109,14 +109,14 @@
     {
       "id": 1789710547709,
       "name": "合规数字化共享平台",
-      "desc": "让合规从「人找法规」变为「法规找人」，实现全员主动合规。",
+      "desc": "从「标准化」到「智能化」一让合规从「人找法规」变为「法规找人」，实现全员主动合规。",
       "type": "html",
       "tags": [
         "合规",
         "数字化"
       ],
       "url": "https://complymap.pages.dev/",
-      "guide": "登录即可查看岗位风险、法规导图",
+      "guide": "打开即用",
       "icon": "/icon/合规.png",
       "author": "@管理员",
       "favorite": false

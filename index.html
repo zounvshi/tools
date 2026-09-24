@@ -323,7 +323,16 @@
                     </select></div>
                 <div><label class="block text-xs font-bold text-slate-600 dark:text-slate-400 mb-1.5">名称 *</label><input id="subName" required type="text" placeholder="工具名称" class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white rounded-xl p-3 text-sm focus:outline-none focus:border-purple-600"></div>
                 <div><label class="block text-xs font-bold text-slate-600 dark:text-slate-400 mb-1.5">描述 *</label><textarea id="subDesc" required rows="2" placeholder="简要用途" class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white rounded-xl p-3 text-sm focus:outline-none focus:border-purple-600"></textarea></div>
-                <div><label class="block text-xs font-bold text-slate-600 dark:text-slate-400 mb-1.5">图标 URL（可选）</label><input id="subIcon" type="text" placeholder="留空用首字母" class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white rounded-xl p-3 text-sm focus:outline-none focus:border-purple-600"></div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-600 dark:text-slate-400 mb-1.5">图标（可选 · 留空会按网址自动抓取）</label>
+                    <div class="flex gap-2 items-center">
+                        <input id="subIcon" type="text" placeholder="留空自动抓取，也可手填图片网址" class="flex-1 min-w-0 bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white rounded-xl p-3 text-sm focus:outline-none focus:border-purple-600">
+                        <button type="button" onclick="autoFetchIcon(this, 'subUrl', 'subIcon', 'subIconPreview')" class="shrink-0 bg-slate-900 dark:bg-sky-500 hover:bg-slate-800 dark:hover:bg-sky-400 text-white dark:text-slate-950 text-xs px-3 py-3 rounded-xl font-bold transition-all whitespace-nowrap">🔍 自动获取</button>
+                        <div id="subIconPreview" class="shrink-0 w-11 h-11 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 flex items-center justify-center overflow-hidden text-slate-400 text-[10px]">无</div>
+                    </div>
+                    <div class="mt-2"><input id="subIconFile" type="file" accept="image/*" onchange="onIconFileChange(this, 'subIcon', 'subIconPreview')" class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white rounded-xl p-2.5 text-xs focus:outline-none focus:border-purple-600"></div>
+                    <p class="text-[11px] text-slate-400 mt-1.5 leading-relaxed">自动获取：按上面的网址去抓站点图标并存进存储，一次抓取长期有效。没有官网的 EXE 工具可直接上传本地图片（≤1MB）。两者都没有时显示名称首字母。</p>
+                </div>
                 <div><label class="block text-xs font-bold text-slate-600 dark:text-slate-400 mb-1.5">作者（@名，可选）</label><input id="subAuthor" type="text" placeholder="@张三" class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white rounded-xl p-3 text-sm focus:outline-none focus:border-purple-600"></div>
                 <div><label id="subUrlLabel" class="block text-xs font-bold text-slate-600 dark:text-slate-400 mb-1.5">访问/下载地址（不传文件时必填）</label><input id="subUrl" type="text" placeholder="https://... 或留空改为上传文件" class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white rounded-xl p-3 text-sm focus:outline-none focus:border-purple-600"></div>
                 <div><label class="block text-xs font-bold text-slate-600 dark:text-slate-400 mb-1.5">上传文件（可选：.exe / .zip / 压缩包等）</label><input id="subFile" type="file" accept=".exe,.msi,.zip,.rar,.7z,.dmg,.deb,.apk,application/*" class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white rounded-xl p-2.5 text-sm focus:outline-none focus:border-purple-600"><p class="text-[11px] text-slate-400 mt-1.5 leading-relaxed">选了文件会直接存到仓库并生成下载链接，无需再填地址。未配置 R2 时单个文件 ≤ 45MB；配置了 R2 可上传更大文件。不传文件时请填上面的网址。两者都不填无法提交。</p></div>
@@ -351,6 +360,70 @@
                 <p class="text-[11px] px-3 py-1.5 rounded-lg bg-slate-200/70 dark:bg-slate-700/60 text-slate-500 dark:text-slate-400 font-bold">原始数据来自 GitHub（只读）· 新增数据存于 R2</p>
             </div>
             <div id="dashBody" class="flex-1 overflow-y-auto space-y-3 pr-1"></div>
+        </div>
+    </div>
+
+    <!-- ===== 图标设置模态（管理后台） ===== -->
+    <div id="iconedit-overlay" class="fixed inset-0 bg-slate-900/40 dark:bg-black/60 backdrop-blur-md z-[80] hidden flex items-center justify-center p-4 transition-all">
+        <div class="bg-white/95 dark:bg-slate-900/95 border border-white/80 dark:border-slate-800 rounded-3xl shadow-2xl w-full max-w-md p-7 modal-anime">
+            <div class="flex justify-between items-center mb-4 border-b border-slate-200 dark:border-slate-800 pb-3">
+                <h3 class="text-base font-bold text-slate-900 dark:text-white font-mono">🖼️ 设置图标</h3>
+                <button onclick="closeIconEditor()" class="text-slate-500 hover:text-slate-900 dark:hover:text-white bg-slate-200/80 dark:bg-slate-800 rounded-xl p-2 transition-all"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/></svg></button>
+            </div>
+            <div id="ieName" class="text-sm font-bold text-slate-800 dark:text-slate-100 mb-4"></div>
+            <div class="flex items-center gap-4 mb-4">
+                <div id="iePreview" class="w-16 h-16 rounded-2xl border border-slate-300 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 flex items-center justify-center overflow-hidden text-slate-400 text-xs shrink-0">无</div>
+                <div class="flex flex-col gap-2 flex-1">
+                    <button type="button" onclick="ieAuto()" class="bg-slate-900 dark:bg-sky-500 hover:bg-slate-800 dark:hover:bg-sky-400 text-white dark:text-slate-950 text-xs px-3 py-2 rounded-xl font-bold transition-all">🔍 按网址自动获取</button>
+                    <button type="button" onclick="document.getElementById('ieFile').click()" class="bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs px-3 py-2 rounded-xl font-bold border border-slate-300 dark:border-slate-700 transition-all">⬆️ 上传本地图片</button>
+                </div>
+            </div>
+            <input id="ieFile" type="file" accept="image/*" class="hidden" onchange="ieFileChange(this)">
+            <div><label class="block text-xs font-bold text-slate-600 dark:text-slate-400 mb-1.5">图标地址（可手填，也可由上面两种方式生成）</label><input id="ieIcon" type="text" placeholder="留空则由网址自动显示" class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white rounded-xl p-3 text-sm focus:outline-none focus:border-purple-600"></div>
+            <p class="text-[11px] text-slate-400 mt-1.5 leading-relaxed">图标存进 R2 后通过本站地址访问，国内加载稳定，且不受对方网站改版影响。</p>
+            <div class="flex items-center justify-between gap-3 pt-5">
+                <button type="button" onclick="ieClear()" class="text-xs text-rose-500 hover:text-rose-600 font-bold underline">清除图标</button>
+                <div class="flex gap-3">
+                    <button type="button" onclick="closeIconEditor()" class="bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 text-xs px-4 py-2.5 rounded-xl font-bold border border-slate-300 dark:border-slate-700">取消</button>
+                    <button type="button" onclick="saveToolIcon()" class="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white text-xs px-5 py-2.5 rounded-xl font-bold shadow-md active:scale-95 transition-all">保存</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== 编辑工具模态（管理后台 · 仅新增工具） ===== -->
+    <div id="tooledit-overlay" class="fixed inset-0 bg-slate-900/40 dark:bg-black/60 backdrop-blur-md z-[80] hidden flex items-center justify-center p-4 transition-all">
+        <div class="bg-white/95 dark:bg-slate-900/95 border border-white/80 dark:border-slate-800 rounded-3xl shadow-2xl w-full max-w-xl p-7 modal-anime max-h-[92vh] overflow-y-auto">
+            <div class="flex justify-between items-center mb-5 border-b border-slate-200 dark:border-slate-800 pb-3"><h3 class="text-base font-bold text-slate-900 dark:text-white font-mono">✏️ 编辑工具</h3>
+                <button onclick="closeToolEditor()" class="text-slate-500 hover:text-slate-900 dark:hover:text-white bg-slate-200/80 dark:bg-slate-800 rounded-xl p-2 transition-all"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/></svg></button>
+            </div>
+            <form id="toolEditForm" onsubmit="saveToolEdit(event)" class="space-y-4">
+                <div><label class="block text-xs font-bold text-slate-600 dark:text-slate-400 mb-1.5">类型 *</label>
+                    <select id="teType" class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white rounded-xl p-3 text-sm focus:outline-none focus:border-purple-600">
+                        <option value="html">Web 在线网页版（填 URL）</option>
+                        <option value="exe">.exe 桌面端（填下载链接）</option>
+                    </select></div>
+                <div><label class="block text-xs font-bold text-slate-600 dark:text-slate-400 mb-1.5">名称 *</label><input id="teName" required type="text" placeholder="工具名称" class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white rounded-xl p-3 text-sm focus:outline-none focus:border-purple-600"></div>
+                <div><label class="block text-xs font-bold text-slate-600 dark:text-slate-400 mb-1.5">描述 *</label><textarea id="teDesc" required rows="2" placeholder="简要用途" class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white rounded-xl p-3 text-sm focus:outline-none focus:border-purple-600"></textarea></div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-600 dark:text-slate-400 mb-1.5">图标（留空会按网址自动显示）</label>
+                    <div class="flex gap-2 items-center">
+                        <input id="teIcon" type="text" placeholder="留空自动显示，也可手填图片网址" class="flex-1 min-w-0 bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white rounded-xl p-3 text-sm focus:outline-none focus:border-purple-600">
+                        <button type="button" onclick="autoFetchIcon(this, 'teUrl', 'teIcon', 'teIconPreview')" class="shrink-0 bg-slate-900 dark:bg-sky-500 hover:bg-slate-800 dark:hover:bg-sky-400 text-white dark:text-slate-950 text-xs px-3 py-3 rounded-xl font-bold transition-all whitespace-nowrap">🔍 自动获取</button>
+                        <div id="teIconPreview" class="shrink-0 w-11 h-11 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 flex items-center justify-center overflow-hidden text-slate-400 text-[10px]">无</div>
+                    </div>
+                    <div class="mt-2"><input id="teIconFile" type="file" accept="image/*" onchange="onIconFileChange(this, 'teIcon', 'teIconPreview')" class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white rounded-xl p-2.5 text-xs focus:outline-none focus:border-purple-600"></div>
+                    <p class="text-[11px] text-slate-400 mt-1.5 leading-relaxed">换图标：可以直接上传本地图片，或按网址重新抓取。原图标会自动清理。</p>
+                </div>
+                <div><label class="block text-xs font-bold text-slate-600 dark:text-slate-400 mb-1.5">作者（@名，可选）</label><input id="teAuthor" type="text" placeholder="@张三" class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white rounded-xl p-3 text-sm focus:outline-none focus:border-purple-600"></div>
+                <div><label class="block text-xs font-bold text-slate-600 dark:text-slate-400 mb-1.5">访问/下载地址 *</label><input id="teUrl" type="text" placeholder="https://..." class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white rounded-xl p-3 text-sm focus:outline-none focus:border-purple-600"></div>
+                <div><label class="block text-xs font-bold text-slate-600 dark:text-slate-400 mb-1.5">替换程序包（可选：.exe / .zip 等）</label><input id="teFile" type="file" accept=".exe,.msi,.zip,.rar,.7z,.dmg,.deb,.apk,application/*" class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white rounded-xl p-2.5 text-sm focus:outline-none focus:border-purple-600"><p id="teFileHint" class="text-[11px] text-slate-400 mt-1.5 leading-relaxed"></p></div>
+                <div><label class="block text-xs font-bold text-slate-600 dark:text-slate-400 mb-1.5">标签（逗号分隔）</label><input id="teTags" type="text" placeholder="效率, 数字化" class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white rounded-xl p-3 text-sm focus:outline-none focus:border-purple-600"></div>
+                <div class="pt-2 flex justify-end gap-3">
+                    <button type="button" onclick="closeToolEditor()" class="bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 text-xs px-4 py-2.5 rounded-xl font-bold border border-slate-300 dark:border-slate-700">取消</button>
+                    <button id="teSaveBtn" type="submit" class="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white text-xs px-5 py-2.5 rounded-xl font-bold shadow-md active:scale-95 transition-all">保存修改</button>
+                </div>
+            </form>
         </div>
     </div>
 
@@ -403,6 +476,8 @@
         }
 
         function logout() {
+            // 退出前把待上传的收藏先推上去（之后令牌失效就传不了了）
+            if (isLoggedIn() && favPushTimer) { clearTimeout(favPushTimer); favPushTimer = null; pushFavorites(); }
             authToken = ''; localStorage.removeItem('authToken'); me = null;
             closeDashboard(); closeSubmitModal(); closeLoginModal();
             toast('已退出登录'); refreshUserArea();
@@ -457,10 +532,14 @@
         const adminAboutEditor = document.getElementById('adminAboutEditor');
         const aboutEditorTextarea = document.getElementById('aboutEditorTextarea');
 
-        // 收藏（本地偏好，存 localStorage）
+        // 收藏：本机 localStorage 打底；登录后额外与云端（R2 data/favorites.json）按账号同步
+        const FAV_KEY = 'favTools';
+        let favPushTimer = null;
+        let favSyncing = false;
+
         function loadFavorites() {
             try {
-                const stored = localStorage.getItem('favTools');
+                const stored = localStorage.getItem(FAV_KEY);
                 const ids = stored ? JSON.parse(stored) : [];
                 // 统一转字符串比较，避免 id 数字/字符串类型不一致导致匹配失败
                 const set = new Set((Array.isArray(ids) ? ids : []).map(String));
@@ -468,8 +547,50 @@
             } catch (e) { /* 本地收藏数据损坏时忽略，不影响主流程 */ }
         }
         function saveFavorites() {
-            try { localStorage.setItem('favTools', JSON.stringify(toolsData.filter(i => i.favorite).map(i => i.id))); }
+            try { localStorage.setItem(FAV_KEY, JSON.stringify(toolsData.filter(i => i.favorite).map(i => i.id))); }
             catch (e) { toast('收藏保存失败：浏览器存储不可用'); }
+        }
+        function currentFavIds() { return toolsData.filter(i => i.favorite).map(i => i.id); }
+        function applyFavIds(ids) {
+            const set = new Set((ids || []).map(String));
+            toolsData.forEach(i => { i.favorite = set.has(String(i.id)); });
+            saveFavorites();
+        }
+
+        // 登录后：拉云端收藏，与本机取「并集」后回写，保证换设备 / 换浏览器都不丢
+        async function syncFavorites() {
+            if (!isLoggedIn() || favSyncing) return;
+            favSyncing = true;
+            try {
+                const res = await fetch('/api/favorites', { headers: authHeaders(), cache: 'no-store' });
+                if (!res.ok) throw new Error('fav-get-' + res.status);
+                const d = await res.json();
+                const remote = (Array.isArray(d.ids) ? d.ids : []).map(String);
+                const local = currentFavIds().map(String);
+                const merged = [...new Set([...remote, ...local])];
+                applyFavIds(merged);
+                renderTools(getActiveFilterType(), searchInput.value);
+                // 本机有云端没有的 → 补传，实现「先本机收藏、后登录」也不丢
+                if (merged.some(x => !remote.includes(x)) || merged.length !== remote.length) {
+                    await pushFavorites(merged.map(Number));
+                }
+            } catch (e) {
+                // 云端不可用（未部署 / 未绑定 R2 / 网络问题）→ 静默退回本机收藏，不影响使用
+            } finally { favSyncing = false; }
+        }
+
+        function pushFavorites(ids) {
+            if (!isLoggedIn()) return Promise.resolve();
+            const body = JSON.stringify({ ids: ids || currentFavIds() });
+            return fetch('/api/favorites', { method: 'POST', headers: authHeaders(), body, cache: 'no-store' })
+                .then(r => { if (!r.ok && r.status === 401) toast('登录已过期，收藏仅保存在本机'); })
+                .catch(() => {});
+        }
+        // 连点收藏时防抖上传，避免请求风暴
+        function schedulePushFavorites() {
+            if (!isLoggedIn()) return;
+            clearTimeout(favPushTimer);
+            favPushTimer = setTimeout(() => pushFavorites(), 400);
         }
 
         // ============ 加载工具（实时，no-store + 兜底静态）============
@@ -493,6 +614,7 @@
             loadFavorites();   // 每次拉到数据后都要回填本地收藏，否则刷新后收藏丢失
             hideLoading();
             renderTools();
+            syncFavorites();   // 登录状态下再与云端对齐（异步，不阻塞首屏）
         }
         async function loadPending() {
             try {
@@ -547,9 +669,11 @@
             }
 
             grid.innerHTML = filtered.map(item => {
-                const iconHtml = item.icon && item.icon.trim() !== ''
-                    ? `<img src="${item.icon}" alt="${item.name}" loading="lazy" onerror="this.style.display='none';this.parentElement.textContent='${item.name.charAt(0).toUpperCase()}'">`
-                    : `${item.name.charAt(0).toUpperCase()}`;
+                const initial = String(item.name || '?').trim().charAt(0).toUpperCase() || '?';
+                const effIcon = (item.icon && item.icon.trim() !== '') ? item.icon.trim() : autoIconUrl(item.url);
+                const iconHtml = effIcon
+                    ? `<img src="${escapeHtml(effIcon)}" alt="${escapeHtml(item.name)}" loading="lazy" onerror="iconFallback(this)">`
+                    : initial;
                 const authorDisplay = item.author && item.author.trim() !== '' ? `<div class="tool-author"><span class="at-symbol">@</span>${item.author.replace(/^@/, '')}</div>` : '';
                 const tagHtml = item.tags.map(tag => `<span class="${(item.type === 'exe') ? 'tag-exe' : 'tag-web'}">${tag}</span>`).join('');
                 const effUrl = item.fileUrl || item.url || '#';
@@ -559,7 +683,7 @@
                             ${isAdmin() && item.source !== 'github' ? `<button onclick="deleteTool(${item.id})" class="absolute top-3 right-3 opacity-0 group-hover:opacity-100 bg-white dark:bg-slate-800 hover:bg-rose-100 dark:hover:bg-rose-900/50 text-slate-600 dark:text-slate-300 hover:text-rose-600 dark:hover:text-rose-400 border border-slate-300 dark:border-slate-700 transition-all px-2.5 py-1 text-xs font-mono rounded-lg z-20 shadow-sm" title="删除">✕ 删除</button>` : (isAdmin() && item.source === 'github' ? `<span class="absolute top-3 right-3 text-[10px] px-2 py-1 rounded-lg bg-slate-200/70 dark:bg-slate-700/70 text-slate-500 dark:text-slate-400 font-mono z-20">原·GitHub</span>` : '')}
                             <div>
                                 <div class="card-header">
-                                    <div class="tool-icon">${iconHtml}</div>
+                                    <div class="tool-icon" data-initial="${escapeHtml(initial)}">${iconHtml}</div>
                                     <div class="name-area"><div class="tool-name">${item.name}</div>${authorDisplay}</div>
                                     <div class="tag-group">${tagHtml}</div>
                                 </div>
@@ -590,10 +714,67 @@
             card.style.setProperty('--mouse-y', `${e.clientY - r.top}px`);
         }
 
+        // ============ 图标 ============
+        // 这些域名只是「文件托管/代码托管」，不是工具官网，抓它们的 favicon 没意义（会变成一堆 GitHub 图标）
+        const ICON_SKIP_HOSTS = /(^|\.)(github\.com|githubusercontent\.com|gitee\.com|jsdelivr\.net|unpkg\.com|npmmirror\.com|r2\.dev|cloudflarestorage\.com|amazonaws\.com|aliyuncs\.com|myqcloud\.com)$/;
+
+        // 未设置 icon 时，按工具网址走本站后端自动抓取（后端抓取不受国内网络限制，并缓存到 R2）
+        function autoIconUrl(url) {
+            const u = String(url || '').trim();
+            if (!/^https?:\/\//i.test(u)) return '';
+            try {
+                const h = new URL(u).hostname.toLowerCase();
+                if (ICON_SKIP_HOSTS.test(h)) return '';
+            } catch (e) { return ''; }
+            return '/api/icon?url=' + encodeURIComponent(u);
+        }
+
+        // 图片加载失败 → 退回名称首字母
+        function iconFallback(img) {
+            const box = img.parentElement;
+            if (!box) return;
+            img.remove();
+            box.textContent = box.dataset.initial || '?';
+        }
+
+        function setIconPreview(previewId, src) {
+            const box = document.getElementById(previewId);
+            if (!box) return;
+            box.innerHTML = src
+                ? `<img src="${escapeHtml(src)}" class="w-full h-full object-cover" onerror="this.parentElement.innerHTML='无'">`
+                : '无';
+        }
+
+        // 自动获取：后端抓站点 favicon → 存 R2 → 返回本站永久地址
+        async function autoFetchIcon(btn, urlId, iconId, previewId) {
+            if (!requireAuth('user')) return;
+            const url = (document.getElementById(urlId).value || '').trim();
+            if (!url) { toast('请先填写上面的访问/下载地址'); return; }
+            const old = btn.innerText; btn.innerText = '获取中…'; btn.disabled = true;
+            try {
+                const res = await fetch('/api/icon', { method: 'POST', headers: authHeaders(), body: JSON.stringify({ url }), cache: 'no-store' });
+                const d = await res.json();
+                if (res.ok && d.icon) {
+                    document.getElementById(iconId).value = d.icon;
+                    setIconPreview(previewId, d.icon);
+                    toast('图标已获取');
+                } else { toast(d.error || '未能自动获取图标，可手动上传图片'); }
+            } catch (e) { toast('网络错误'); }
+            finally { btn.innerText = old; btn.disabled = false; }
+        }
+
+        // 选了本地图片：本地预览，并以文件为准（清空手填网址）
+        function onIconFileChange(input, iconId, previewId) {
+            const f = input.files && input.files[0];
+            if (!f) { setIconPreview(previewId, document.getElementById(iconId).value); return; }
+            document.getElementById(iconId).value = '';
+            setIconPreview(previewId, URL.createObjectURL(f));
+        }
+
         // ============ 收藏 ============
         function toggleFavorite(id) {
             const item = toolsData.find(t => t.id === id); if (!item) return;
-            item.favorite = !item.favorite; saveFavorites();
+            item.favorite = !item.favorite; saveFavorites(); schedulePushFavorites();
             if (isFavViewActive && !item.favorite) renderTools('favorite', searchInput.value);
             else renderTools(getActiveFilterType(), searchInput.value);
         }
@@ -709,6 +890,8 @@
             if (!requireAuth('user')) return;
             const fileInput = document.getElementById('subFile');
             const file = fileInput.files && fileInput.files[0] ? fileInput.files[0] : null;
+            const iconFileInput = document.getElementById('subIconFile');
+            const iconFile = iconFileInput.files && iconFileInput.files[0] ? iconFileInput.files[0] : null;
             const url = document.getElementById('subUrl').value.trim();
             if (!file && !url) { toast('请填写访问/下载地址，或选择要上传的文件'); return; }
             const fd = new FormData();
@@ -721,11 +904,12 @@
             fd.append('tags', document.getElementById('subTags').value);
             fd.append('guide', '');
             if (file) fd.append('file', file);
+            if (iconFile) fd.append('iconFile', iconFile);
             try {
                 const res = await fetch('/api/submit', { method: 'POST', headers: authHeaders(true), body: fd, cache: 'no-store' });
                 const d = await res.json();
                 if (res.ok && d.success) {
-                    closeSubmitModal(); document.getElementById('submitForm').reset(); document.getElementById('subFile').value = ''; adaptSubType();
+                    closeSubmitModal(); document.getElementById('submitForm').reset(); document.getElementById('subFile').value = ''; document.getElementById('subIconFile').value = ''; setIconPreview('subIconPreview', ''); adaptSubType();
                     toast(d.status === 'pending' ? '已提交，等待管理员审核' : '已直接上线');
                     await loadTools();
                 } else { toast(d.error || '提交失败'); }
@@ -763,7 +947,7 @@
                 body.innerHTML = toolsData.map(t => `
                     <div class="flex items-center justify-between gap-3 border border-slate-200 dark:border-slate-700 rounded-2xl p-4 bg-white/60 dark:bg-slate-800/40">
                         <div class="min-w-0"><div class="font-bold text-slate-900 dark:text-white truncate flex items-center gap-2">${t.name} ${t.source === 'github' ? '<span class="text-[10px] px-2 py-0.5 rounded bg-slate-200 dark:bg-slate-700 text-slate-500 font-mono">原·GitHub</span>' : ''}</div><div class="text-xs text-slate-500 mt-1">${t.author || ''}</div></div>
-                        ${t.source !== 'github' ? `<button onclick="deleteTool(${t.id})" class="bg-rose-500 hover:bg-rose-600 text-white text-xs px-4 py-2 rounded-xl font-bold shrink-0">删除</button>` : `<span class="text-[10px] text-slate-400 shrink-0">只读</span>`}
+                        ${t.source !== 'github' ? `<div class="flex gap-2 shrink-0 flex-wrap justify-end"><button onclick="openToolEditor(${t.id})" class="bg-indigo-500 hover:bg-indigo-600 text-white text-xs px-3 py-2 rounded-xl font-bold">✏️ 编辑</button><button onclick="openIconEditor(${t.id})" class="bg-sky-500 hover:bg-sky-600 text-white text-xs px-3 py-2 rounded-xl font-bold">🖼️ 图标</button><button onclick="deleteTool(${t.id})" class="bg-rose-500 hover:bg-rose-600 text-white text-xs px-4 py-2 rounded-xl font-bold">删除</button></div>` : `<span class="text-[10px] text-slate-400 shrink-0">只读</span>`}
                     </div>`).join('');
             }
         }
@@ -784,6 +968,130 @@
                 const d = await res.json();
                 if (res.ok && d.success) { toast('已删除'); await loadTools(); if (isAdmin()) await loadPending(); renderDashboard('live'); }
                 else toast(d.error || '删除失败');
+            } catch (e) { toast('网络错误'); }
+        }
+
+        // ============ 后台：编辑工具信息（仅对 R2 新增工具；GitHub 原始数据只读） ============
+        let teToolId = null;
+        function teTool() { return toolsData.find(x => String(x.id) === String(teToolId)); }
+        function openToolEditor(id) {
+            if (!requireAuth('admin')) return;
+            const t = toolsData.find(x => String(x.id) === String(id));
+            if (!t) { toast('未找到该工具，请刷新后重试'); return; }
+            if (t.source === 'github') { toast('这是 GitHub 原始数据，只读不可编辑'); return; }
+            teToolId = id;
+            document.getElementById('teType').value = t.type || 'html';
+            document.getElementById('teName').value = t.name || '';
+            document.getElementById('teDesc').value = t.desc || '';
+            document.getElementById('teIcon').value = t.icon || '';
+            document.getElementById('teIconFile').value = '';
+            document.getElementById('teAuthor').value = t.author || '';
+            document.getElementById('teUrl').value = t.url || '';
+            document.getElementById('teFile').value = '';
+            document.getElementById('teTags').value = Array.isArray(t.tags) ? t.tags.join(', ') : '';
+            setIconPreview('teIconPreview', t.icon || autoIconUrl(t.url));
+            const hint = document.getElementById('teFileHint');
+            if (t.fileName) {
+                const size = t.fileSize ? `（${(t.fileSize / 1024 / 1024).toFixed(1)} MB）` : '';
+                hint.innerHTML = `当前文件：<b>${escapeHtml(t.fileName)}</b>${size}<br>不选择新文件就保持原文件不变。`;
+            } else {
+                hint.textContent = '该工具当前是网址形式。选择文件后会改成文件下载，上方的网址仍然保留。';
+            }
+            document.getElementById('tooledit-overlay').classList.remove('hidden');
+        }
+        function closeToolEditor() { document.getElementById('tooledit-overlay').classList.add('hidden'); teToolId = null; }
+        async function saveToolEdit(e) {
+            if (e && e.preventDefault) e.preventDefault();
+            if (!requireAuth('admin')) return;
+            const t = teTool();
+            if (!t) { toast('未找到该工具，请刷新后重试'); return; }
+            const fileInput = document.getElementById('teFile');
+            const iconInput = document.getElementById('teIconFile');
+            const file = fileInput.files && fileInput.files[0];
+            const iconFile = iconInput.files && iconInput.files[0];
+            const url = document.getElementById('teUrl').value.trim();
+            if (!url && !(t.fileUrl || file)) { toast('请填写访问/下载地址，或上传文件'); return; }
+
+            const btn = document.getElementById('teSaveBtn');
+            const oldText = btn.innerText; btn.innerText = '保存中…'; btn.disabled = true;
+            try {
+                const fd = new FormData();
+                fd.append('action', 'edit');
+                fd.append('id', String(teToolId));
+                fd.append('name', document.getElementById('teName').value.trim());
+                fd.append('desc', document.getElementById('teDesc').value.trim());
+                fd.append('type', document.getElementById('teType').value);
+                fd.append('tags', document.getElementById('teTags').value);
+                fd.append('author', document.getElementById('teAuthor').value.trim());
+                fd.append('url', url);
+                fd.append('icon', document.getElementById('teIcon').value.trim());
+                if (file) fd.append('file', file);
+                if (iconFile) fd.append('iconFile', iconFile);
+                const res = await fetch('/api/admin', { method: 'POST', headers: authHeaders(true), body: fd, cache: 'no-store' });
+                const d = await res.json();
+                if (res.ok && d.success) {
+                    toast('修改已保存'); closeToolEditor();
+                    await loadTools(); if (isAdmin()) await loadPending(); renderDashboard('live');
+                } else toast(d.error || '保存失败');
+            } catch (err) { toast('网络错误'); }
+            finally { btn.innerText = oldText; btn.disabled = false; }
+        }
+
+        // ============ 后台：设置图标 ============
+        let ieToolId = null;
+        function openIconEditor(id) {
+            const t = toolsData.find(x => String(x.id) === String(id));
+            if (!t) return;
+            ieToolId = id;
+            document.getElementById('ieName').innerText = t.name;
+            document.getElementById('ieIcon').value = t.icon || '';
+            document.getElementById('ieFile').value = '';
+            setIconPreview('iePreview', t.icon || autoIconUrl(t.url));
+            document.getElementById('iconedit-overlay').classList.remove('hidden');
+        }
+        function closeIconEditor() { document.getElementById('iconedit-overlay').classList.add('hidden'); ieToolId = null; }
+        function ieTool() { return toolsData.find(x => String(x.id) === String(ieToolId)); }
+        async function ieAuto() {
+            const t = ieTool(); if (!t) return;
+            if (!t.url) { toast('该工具没有网址，请改用上传本地图片'); return; }
+            toast('正在抓取…');
+            try {
+                const res = await fetch('/api/icon', { method: 'POST', headers: authHeaders(), body: JSON.stringify({ url: t.url }), cache: 'no-store' });
+                const d = await res.json();
+                if (res.ok && d.icon) { document.getElementById('ieIcon').value = d.icon; setIconPreview('iePreview', d.icon); toast('已获取，点保存生效'); }
+                else toast(d.error || '未能获取，可改用上传图片');
+            } catch (e) { toast('网络错误'); }
+        }
+        function ieFileChange(input) {
+            const f = input.files && input.files[0]; if (!f) return;
+            document.getElementById('ieIcon').value = '';
+            setIconPreview('iePreview', URL.createObjectURL(f));
+        }
+        function ieClear() {
+            document.getElementById('ieIcon').value = '';
+            document.getElementById('ieFile').value = '';
+            setIconPreview('iePreview', '');
+        }
+        async function saveToolIcon() {
+            if (!requireAuth('admin')) return;
+            let icon = document.getElementById('ieIcon').value.trim();
+            const file = document.getElementById('ieFile').files && document.getElementById('ieFile').files[0];
+            if (file) {
+                const fd = new FormData(); fd.append('iconFile', file);
+                try {
+                    const res = await fetch('/api/icon', { method: 'POST', headers: authHeaders(true), body: fd, cache: 'no-store' });
+                    const d = await res.json();
+                    if (!res.ok || !d.icon) { toast(d.error || '图标上传失败'); return; }
+                    icon = d.icon;
+                } catch (e) { toast('网络错误'); return; }
+            }
+            try {
+                const res = await fetch('/api/admin', { method: 'POST', headers: authHeaders(), body: JSON.stringify({ action: 'seticon', id: ieToolId, icon }), cache: 'no-store' });
+                const d = await res.json();
+                if (res.ok && d.success) {
+                    toast('图标已更新'); closeIconEditor();
+                    await loadTools(); if (isAdmin()) await loadPending(); renderDashboard('live');
+                } else toast(d.error || '保存失败');
             } catch (e) { toast('网络错误'); }
         }
 
@@ -813,6 +1121,8 @@
         modal.addEventListener('click', (e) => { if (e.target === modal) document.getElementById('close-modal').click(); });
         guideOverlay.addEventListener('click', (e) => { if (e.target === guideOverlay) closeGuideModal(); });
         aboutOverlay.addEventListener('click', (e) => { if (e.target === aboutOverlay) closeAboutModal(); });
+        const toolEditOverlay = document.getElementById('tooledit-overlay');
+        toolEditOverlay.addEventListener('click', (e) => { if (e.target === toolEditOverlay) closeToolEditor(); });
         document.addEventListener('keydown', (e) => {
             if (e.key !== 'Escape') return;
             if (!aboutOverlay.classList.contains('hidden')) closeAboutModal();
@@ -821,6 +1131,8 @@
             if (!document.getElementById('login-overlay').classList.contains('hidden')) closeLoginModal();
             if (!document.getElementById('submit-overlay').classList.contains('hidden')) closeSubmitModal();
             if (!document.getElementById('dashboard-overlay').classList.contains('hidden')) closeDashboard();
+            if (!document.getElementById('iconedit-overlay').classList.contains('hidden')) closeIconEditor();
+            if (!document.getElementById('tooledit-overlay').classList.contains('hidden')) closeToolEditor();
         });
 
         // 多标签页之间同步收藏（另一个标签页改了收藏，本页实时跟随）
@@ -831,7 +1143,7 @@
         });
 
         // ============ 全局暴露 ============
-        Object.assign(window, { toggleDarkMode, handleCardMouseMove, openAboutModal, closeAboutModal, previewAbout, saveAboutContent, openGuideModal, closeGuideModal, previewGuide, saveGuideForCurrentTool, openModal, toggleModalSize, toggleFavorite, openLoginModal, closeLoginModal, setLoginMode, handleLogin, openSubmitModal, closeSubmitModal, adaptSubType, handleSubmit, openDashboard, closeDashboard, setDashTab, adminReview, deleteTool, toggleHamburger, logout });
+        Object.assign(window, { toggleDarkMode, handleCardMouseMove, openAboutModal, closeAboutModal, previewAbout, saveAboutContent, openGuideModal, closeGuideModal, previewGuide, saveGuideForCurrentTool, openModal, toggleModalSize, toggleFavorite, openLoginModal, closeLoginModal, setLoginMode, handleLogin, openSubmitModal, closeSubmitModal, adaptSubType, handleSubmit, openDashboard, closeDashboard, setDashTab, adminReview, deleteTool, toggleHamburger, logout, iconFallback, autoFetchIcon, onIconFileChange, openIconEditor, closeIconEditor, ieAuto, ieFileChange, ieClear, saveToolIcon, openToolEditor, closeToolEditor, saveToolEdit });
 
         // ============ 启动 ============
         initTheme();
