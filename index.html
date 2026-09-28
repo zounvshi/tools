@@ -136,6 +136,10 @@
             z-index:100; transition:all .3s; pointer-events:none; box-shadow:0 10px 30px rgba(0,0,0,.3); }
         #toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
 
+        /* ===== 用户下拉菜单 ===== */
+        #navUserMenu, #navUserMenuM { animation: menuPop .18s cubic-bezier(.16,1,.3,1); transform-origin: top right; }
+        @keyframes menuPop { from { opacity:0; transform:translateY(-6px) scale(.97); } to { opacity:1; transform:none; } }
+
         .hidden-force { display:none !important; }
     </style>
 </head>
@@ -336,7 +340,7 @@
                 <div><label class="block text-xs font-bold text-slate-600 dark:text-slate-400 mb-1.5">作者（@名，可选）</label><input id="subAuthor" type="text" placeholder="@张三" class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white rounded-xl p-3 text-sm focus:outline-none focus:border-purple-600"></div>
                 <div><label id="subUrlLabel" class="block text-xs font-bold text-slate-600 dark:text-slate-400 mb-1.5">访问/下载地址（不传文件时必填）</label><input id="subUrl" type="text" placeholder="https://... 或留空改为上传文件" class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white rounded-xl p-3 text-sm focus:outline-none focus:border-purple-600"></div>
                 <div><label class="block text-xs font-bold text-slate-600 dark:text-slate-400 mb-1.5">上传文件（可选：.exe / .zip / 压缩包等）</label><input id="subFile" type="file" accept=".exe,.msi,.zip,.rar,.7z,.dmg,.deb,.apk,application/*" class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white rounded-xl p-2.5 text-sm focus:outline-none focus:border-purple-600"><p class="text-[11px] text-slate-400 mt-1.5 leading-relaxed">选了文件会直接存到仓库并生成下载链接，无需再填地址。未配置 R2 时单个文件 ≤ 45MB；配置了 R2 可上传更大文件。不传文件时请填上面的网址。两者都不填无法提交。</p></div>
-                <div><label class="block text-xs font-bold text-slate-600 dark:text-slate-400 mb-1.5">标签（逗号分隔）</label><input id="subTags" type="text" placeholder="效率, 数字化" class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white rounded-xl p-3 text-sm focus:outline-none focus:border-purple-600"></div>
+                <div><label class="block text-xs font-bold text-slate-600 dark:text-slate-400 mb-1.5">标签（用英文逗号 , 分隔）</label><input id="subTags" type="text" placeholder="效率, 数字化" class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white rounded-xl p-3 text-sm focus:outline-none focus:border-purple-600"></div>
                 <div class="pt-2 flex justify-end gap-3">
                     <button type="button" onclick="closeSubmitModal()" class="bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 text-xs px-4 py-2.5 rounded-xl font-bold border border-slate-300 dark:border-slate-700">取消</button>
                     <button type="submit" class="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white text-xs px-5 py-2.5 rounded-xl font-bold shadow-md active:scale-95 transition-all">提交审核</button>
@@ -376,6 +380,18 @@
                 <button type="submit" class="w-full bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white text-sm py-3 rounded-xl font-bold shadow-md transition-all active:scale-95">确 定 修 改</button>
             </form>
             <p class="text-[11px] text-slate-400 mt-3 leading-relaxed">修改后需重新登录。管理员若想改自己的密码，请在 Cloudflare 环境变量 ADMIN_CREDENTIALS 中更新哈希。</p>
+        </div>
+    </div>
+
+    <!-- ===== 我的提交 / 审核进度模态 ===== -->
+    <div id="ms-overlay" class="fixed inset-0 bg-slate-900/40 dark:bg-black/60 backdrop-blur-md z-[80] hidden flex items-center justify-center p-4 transition-all">
+        <div class="bg-white/95 dark:bg-slate-900/95 border border-white/80 dark:border-slate-800 rounded-3xl shadow-2xl w-full max-w-2xl max-h-[86vh] flex flex-col p-7 modal-anime">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-lg font-bold text-slate-900 dark:text-white font-mono">📋 我的提交 · 审核进度</h3>
+                <button onclick="closeMySubmissions()" class="text-slate-500 hover:text-slate-900 dark:hover:text-white bg-slate-200/80 dark:bg-slate-800 rounded-xl p-2 transition-all"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/></svg></button>
+            </div>
+            <div id="msBody" class="flex-1 overflow-y-auto space-y-3 pr-1"></div>
+            <p class="text-[11px] text-slate-400 mt-3 leading-relaxed">仅显示你本人提交的工具。被驳回的工具会附带管理员填写的审批意见，可据此修改后重新提交。</p>
         </div>
     </div>
 
@@ -434,7 +450,7 @@
                 <div><label class="block text-xs font-bold text-slate-600 dark:text-slate-400 mb-1.5">作者（@名，可选）</label><input id="teAuthor" type="text" placeholder="@张三" class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white rounded-xl p-3 text-sm focus:outline-none focus:border-purple-600"></div>
                 <div><label class="block text-xs font-bold text-slate-600 dark:text-slate-400 mb-1.5">访问/下载地址 *</label><input id="teUrl" type="text" placeholder="https://..." class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white rounded-xl p-3 text-sm focus:outline-none focus:border-purple-600"></div>
                 <div><label class="block text-xs font-bold text-slate-600 dark:text-slate-400 mb-1.5">替换程序包（可选：.exe / .zip 等）</label><input id="teFile" type="file" accept=".exe,.msi,.zip,.rar,.7z,.dmg,.deb,.apk,application/*" class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white rounded-xl p-2.5 text-sm focus:outline-none focus:border-purple-600"><p id="teFileHint" class="text-[11px] text-slate-400 mt-1.5 leading-relaxed"></p></div>
-                <div><label class="block text-xs font-bold text-slate-600 dark:text-slate-400 mb-1.5">标签（逗号分隔）</label><input id="teTags" type="text" placeholder="效率, 数字化" class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white rounded-xl p-3 text-sm focus:outline-none focus:border-purple-600"></div>
+                <div><label class="block text-xs font-bold text-slate-600 dark:text-slate-400 mb-1.5">标签（用英文逗号 , 分隔）</label><input id="teTags" type="text" placeholder="效率, 数字化" class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white rounded-xl p-3 text-sm focus:outline-none focus:border-purple-600"></div>
                 <div class="pt-2 flex justify-end gap-3">
                     <button type="button" onclick="closeToolEditor()" class="bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 text-xs px-4 py-2.5 rounded-xl font-bold border border-slate-300 dark:border-slate-700">取消</button>
                     <button id="teSaveBtn" type="submit" class="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white text-xs px-5 py-2.5 rounded-xl font-bold shadow-md active:scale-95 transition-all">保存修改</button>
@@ -470,6 +486,69 @@
         function authHeaders(skipContentType) { const h = { 'Authorization': 'Bearer ' + authToken }; if (!skipContentType) h['Content-Type'] = 'application/json'; return h; }
         function escapeHtml(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])); }
 
+        // ===== 用户下拉菜单（头像 + 用户名 → 修改密码 / 退出登录）=====
+        // scope: 'd' = 桌面端顶栏，'m' = 移动端汉堡菜单内
+        function userMenuMarkup(scope) {
+            const m = scope === 'm';
+            const suffix = m ? 'M' : '';
+            const admin = isAdmin();
+            const name = escapeHtml(me.sub || '未命名');
+            const initial = escapeHtml(String(me.sub || '?').trim().charAt(0).toUpperCase());
+            const avatar = '<span class="w-6 h-6 shrink-0 rounded-full bg-gradient-to-br from-sky-500 to-indigo-600 text-white text-[11px] font-black flex items-center justify-center select-none">' + initial + '</span>';
+            const chevron = '<svg id="navUserChevron' + suffix + '" class="w-3.5 h-3.5 shrink-0 text-slate-400 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M6 9l6 6 6-6"/></svg>';
+            const triggerCls = (m
+                ? 'flex w-full items-center gap-2 px-3 py-2 rounded-xl text-sm font-bold'
+                : 'flex items-center gap-2 px-2.5 py-1.5 rounded-xl text-xs font-bold shadow-sm')
+                + ' bg-white/70 dark:bg-slate-800/70 hover:bg-white dark:hover:bg-slate-700 border border-white/80 dark:border-slate-700 text-slate-800 dark:text-slate-100 transition-all';
+            const trigger = '<button type="button" id="navUserTrigger' + suffix + '" onclick="toggleUserMenu(\'' + scope + '\', event)" aria-haspopup="menu" aria-expanded="false" title="账号菜单" class="' + triggerCls + '">'
+                + avatar + '<span class="truncate max-w-[110px]">' + name + '</span>' + chevron + '</button>';
+            const cpItem = admin
+                ? '<button type="button" onclick="adminPasswordTip(); closeUserMenus();" class="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-xs font-bold text-slate-400 dark:text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all"><span>🔑</span>修改密码<span class="ml-auto text-[10px] font-normal">需后台修改</span></button>'
+                : '<button type="button" onclick="openChangePasswordModal(); closeUserMenus();" class="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-xs font-bold text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all"><span>🔑</span>修改密码</button>';
+            const progressItem = '<button type="button" onclick="openMySubmissions(); closeUserMenus();" class="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-xs font-bold text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all"><span>📋</span>审核进度</button>';
+            const roleBadge = admin
+                ? '<span class="shrink-0 text-[10px] font-bold px-1.5 py-0.5 rounded-md bg-purple-100 dark:bg-purple-900/40 text-purple-600 dark:text-purple-300">管理员</span>'
+                : '<span class="shrink-0 text-[10px] font-bold px-1.5 py-0.5 rounded-md bg-sky-100 dark:bg-sky-900/40 text-sky-600 dark:text-sky-300">用户</span>';
+            const menuItems = '<div class="px-3 py-2.5 border-b border-slate-200/80 dark:border-slate-700/60">'
+                + '<div class="text-[10px] font-bold tracking-widest uppercase text-slate-400 dark:text-slate-500">当前登录</div>'
+                + '<div class="flex items-center gap-2 mt-1"><span class="text-sm font-black text-slate-900 dark:text-white truncate">' + name + '</span>' + roleBadge + '</div>'
+                + '</div>'
+                + '<div class="py-1.5 px-1.5 space-y-0.5">' + progressItem + cpItem
+                + '<button type="button" onclick="logout()" class="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-xs font-bold text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-900/30 transition-all"><span>🚪</span>退出登录</button>'
+                + '</div>';
+            if (m) {
+                return '<div id="navUserAreaM" class="w-full">' + trigger
+                    + '<div id="navUserMenuM" class="hidden mt-1.5 w-full bg-white/95 dark:bg-slate-900/95 border border-slate-200 dark:border-slate-700 rounded-2xl shadow-lg overflow-hidden">' + menuItems + '</div></div>';
+            }
+            return '<div id="navUserArea" class="relative">' + trigger
+                + '<div id="navUserMenu" class="hidden absolute right-0 top-full mt-2 w-56 bg-white/95 dark:bg-slate-900/95 border border-slate-200 dark:border-slate-700 rounded-2xl shadow-xl overflow-hidden z-[55]">' + menuItems + '</div></div>';
+        }
+
+        function userMenuEls(scope) {
+            const m = scope === 'm';
+            return {
+                menu: document.getElementById(m ? 'navUserMenuM' : 'navUserMenu'),
+                chevron: document.getElementById(m ? 'navUserChevronM' : 'navUserChevron'),
+                trigger: document.getElementById(m ? 'navUserTriggerM' : 'navUserTrigger')
+            };
+        }
+        function setUserMenuOpen(scope, open) {
+            const els = userMenuEls(scope);
+            if (!els.menu) return;
+            els.menu.classList.toggle('hidden', !open);
+            if (els.chevron) els.chevron.style.transform = open ? 'rotate(180deg)' : 'rotate(0deg)';
+            if (els.trigger) els.trigger.setAttribute('aria-expanded', open ? 'true' : 'false');
+        }
+        function toggleUserMenu(scope, ev) {
+            if (ev) ev.stopPropagation();
+            const els = userMenuEls(scope);
+            const willOpen = !els.menu || els.menu.classList.contains('hidden');
+            setUserMenuOpen(scope === 'm' ? 'd' : 'm', false);   // 两端同时只展开一个
+            setUserMenuOpen(scope, willOpen);
+        }
+        function closeUserMenus() { setUserMenuOpen('d', false); setUserMenuOpen('m', false); }
+        function adminPasswordTip() { toast('管理员密码请在 Cloudflare 环境变量 ADMIN_CREDENTIALS 中修改'); }
+
         function refreshUserArea() {
             me = parseToken();
             const btn = document.getElementById('navUserArea');
@@ -477,10 +556,10 @@
             const adminBtn = document.getElementById('navAdminBtn');
             const adminBtnM = document.getElementById('navAdminBtnM');
             if (isLoggedIn()) {
-                const area = `<span>👤 ${me.sub}</span><button onclick="openChangePasswordModal()" class="text-sky-500 hover:text-sky-600 underline">改密码</button><button onclick="logout()" class="text-rose-500 hover:text-rose-600 underline">退出</button>`;
-                btn.outerHTML = `<span id="navUserArea" class="flex items-center gap-2 bg-white/70 dark:bg-slate-800/70 border border-white/80 dark:border-slate-700 px-3 py-2 rounded-xl text-xs font-bold">${area}</span>`;
-                btnM.outerHTML = `<span id="navUserAreaM" class="block w-full text-left bg-white/70 dark:bg-slate-800/70 border border-white/80 dark:border-slate-700 px-3 py-2 rounded-xl text-sm font-bold">${area}</span>`;
+                btn.outerHTML = userMenuMarkup('d');
+                btnM.outerHTML = userMenuMarkup('m');
             } else {
+                closeUserMenus();
                 btn.outerHTML = `<button id="navUserArea" onclick="openLoginModal()" class="bg-slate-900 dark:bg-sky-500 text-white dark:text-slate-950 px-4 py-2 rounded-xl text-xs font-bold transition-all shadow-sm">登录</button>`;
                 btnM.outerHTML = `<button id="navUserAreaM" onclick="openLoginModal()" class="block w-full text-left bg-slate-900 dark:bg-sky-500 text-white dark:text-slate-950 px-3 py-2 rounded-xl text-sm font-bold">登录</button>`;
             }
@@ -924,7 +1003,7 @@
                 const d = await res.json();
                 if (res.ok && d.success) {
                     closeSubmitModal(); document.getElementById('submitForm').reset(); document.getElementById('subFile').value = ''; document.getElementById('subIconFile').value = ''; setIconPreview('subIconPreview', ''); adaptSubType();
-                    toast(d.status === 'pending' ? '已提交，等待管理员审核' : '已直接上线');
+                    toast(d.status === 'pending' ? '已提交，等待管理员审核（右上角菜单 → 审核进度 可查看）' : '已直接上线');
                     await loadTools();
                 } else { toast(d.error || '提交失败'); }
             } catch (err) { toast('网络错误'); }
@@ -971,10 +1050,17 @@
         }
         async function adminReview(action, id) {
             if (!requireAuth('admin')) return;
+            // 驳回时填写意见，会展示给提交人（可留空；点「取消」则不驳回）
+            let note = '';
+            if (action === 'reject') {
+                const input = prompt('驳回意见（将展示给提交人，可留空）：', '');
+                if (input === null) return;
+                note = String(input).trim();
+            }
             try {
-                const res = await fetch('/api/admin', { method: 'POST', headers: authHeaders(), body: JSON.stringify({ action, id }), cache: 'no-store' });
+                const res = await fetch('/api/admin', { method: 'POST', headers: authHeaders(), body: JSON.stringify({ action, id, note }), cache: 'no-store' });
                 const d = await res.json();
-                if (res.ok && d.success) { toast(action === 'approve' ? '已通过并上线' : '已驳回'); await loadTools(); if (isAdmin()) await loadPending(); renderDashboard('pending'); }
+                if (res.ok && d.success) { toast(action === 'approve' ? '已通过并上线' : (note ? '已驳回，意见已通知提交人' : '已驳回')); await loadTools(); if (isAdmin()) await loadPending(); renderDashboard('pending'); }
                 else toast(d.error || '操作失败');
             } catch (e) { toast('网络错误'); }
         }
@@ -1118,6 +1204,60 @@
         }
 
         // ============ 修改密码（普通用户） ============
+        // ============ 我的提交 · 审核进度 ============
+        function openMySubmissions() {
+            if (!requireAuth()) return;
+            document.getElementById('ms-overlay').classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+            loadMySubmissions();
+        }
+        function closeMySubmissions() {
+            document.getElementById('ms-overlay').classList.add('hidden');
+            document.body.style.overflow = 'auto';
+        }
+        async function loadMySubmissions() {
+            const body = document.getElementById('msBody');
+            body.innerHTML = '<div class="text-center py-10 text-slate-400 text-sm">加载中…</div>';
+            try {
+                const res = await fetch('/api/my-submissions', { headers: authHeaders(true), cache: 'no-store' });
+                const d = await res.json().catch(() => ({}));
+                if (!res.ok) {
+                    body.innerHTML = '<div class="text-center py-10 text-rose-500 text-sm">' + escapeHtml(d.error || ('加载失败（' + res.status + '）')) + '</div>';
+                    return;
+                }
+                renderMySubmissions(d.list || []);
+            } catch (e) {
+                body.innerHTML = '<div class="text-center py-10 text-rose-500 text-sm">网络错误，请稍后重试</div>';
+            }
+        }
+        function renderMySubmissions(list) {
+            const body = document.getElementById('msBody');
+            if (!list || !list.length) { body.innerHTML = '<div class="text-center py-12 text-slate-400 italic text-sm">你还没有提交过工具</div>'; return; }
+            const badges = {
+                pending: '<span class="shrink-0 text-[10px] font-bold px-2 py-0.5 rounded-md bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-300">⏳ 待审核</span>',
+                approved: '<span class="shrink-0 text-[10px] font-bold px-2 py-0.5 rounded-md bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300">✓ 已通过</span>',
+                rejected: '<span class="shrink-0 text-[10px] font-bold px-2 py-0.5 rounded-md bg-rose-100 dark:bg-rose-900/40 text-rose-700 dark:text-rose-300">✕ 已驳回</span>'
+            };
+            body.innerHTML = list.map(function (t) {
+                const st = badges[t.status] || badges.pending;
+                const time = t.submittedAt ? new Date(t.submittedAt).toLocaleString() : '';
+                const reviewTime = t.reviewedAt ? new Date(t.reviewedAt).toLocaleString() : '';
+                const note = t.reviewNote
+                    ? '<div class="mt-2 text-xs leading-relaxed bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800 text-rose-700 dark:text-rose-300 rounded-xl px-3 py-2">审批意见：' + escapeHtml(t.reviewNote) + '</div>'
+                    : '';
+                const reviewLine = t.reviewedBy
+                    ? '<div class="text-[11px] text-slate-500 dark:text-slate-400 mt-1">审批人：' + escapeHtml(t.reviewedBy) + (reviewTime ? ' · ' + reviewTime : '') + '</div>'
+                    : '';
+                return '<div class="border border-slate-200 dark:border-slate-700 rounded-2xl p-4 bg-white/60 dark:bg-slate-800/40">'
+                    + '<div class="flex items-start justify-between gap-3">'
+                    + '<div class="min-w-0"><div class="font-bold text-slate-900 dark:text-white truncate">' + escapeHtml(t.name) + '</div>'
+                    + '<div class="text-[11px] text-slate-500 dark:text-slate-400 mt-1">提交时间：' + time + ' · ' + (t.type === 'exe' ? 'EXE' : 'WEB') + '</div></div>'
+                    + st + '</div>'
+                    + '<div class="text-sm text-slate-600 dark:text-slate-300 mt-2">' + escapeHtml(t.desc) + '</div>'
+                    + reviewLine + note + '</div>';
+            }).join('');
+        }
+
         function openChangePasswordModal() { document.getElementById('cp-overlay').classList.remove('hidden'); document.body.style.overflow = 'hidden'; }
         function closeChangePasswordModal() { document.getElementById('cp-overlay').classList.add('hidden'); document.body.style.overflow = 'auto'; document.getElementById('cpOld').value = ''; document.getElementById('cpNew').value = ''; }
         async function submitChangePassword(e) {
@@ -1260,6 +1400,16 @@
         // ============ 汉堡菜单 ============
         function toggleHamburger() { document.getElementById('hamburgerMenu').classList.toggle('hidden'); }
 
+        // 用户下拉：点击空白处 / 按 ESC / 页面滚动时自动收起
+        document.addEventListener('click', function (e) {
+            const t = e.target;
+            if (t && t.closest && t.closest('#navUserArea, #navUserAreaM')) return;
+            closeUserMenus();
+        });
+        document.addEventListener('keydown', function (e) { if (e.key === 'Escape') closeUserMenus(); });
+        // 滚动只收起桌面端浮层下拉；移动端菜单在文档流内，滚动不关闭
+        window.addEventListener('scroll', function () { setUserMenuOpen('d', false); }, { passive: true });
+
         // ============ 事件绑定 ============
         favToggle.addEventListener('click', function () {
             isFavViewActive = !isFavViewActive;
@@ -1305,7 +1455,7 @@
         });
 
         // ============ 全局暴露 ============
-        Object.assign(window, { toggleDarkMode, handleCardMouseMove, openAboutModal, closeAboutModal, previewAbout, saveAboutContent, openGuideModal, closeGuideModal, previewGuide, saveGuideForCurrentTool, openModal, toggleModalSize, toggleFavorite, openLoginModal, closeLoginModal, setLoginMode, handleLogin, openSubmitModal, closeSubmitModal, adaptSubType, handleSubmit, openDashboard, closeDashboard, setDashTab, adminReview, deleteTool, toggleHamburger, logout, iconFallback, autoFetchIcon, onIconFileChange, openIconEditor, closeIconEditor, ieAuto, ieFileChange, ieClear, saveToolIcon, openToolEditor, closeToolEditor, saveToolEdit, renderUsersTab, loadUsers, createUser, uploadImport, confirmImport, resetUserPassword, deleteUser, openChangePasswordModal, closeChangePasswordModal, submitChangePassword });
+        Object.assign(window, { toggleDarkMode, handleCardMouseMove, openAboutModal, closeAboutModal, previewAbout, saveAboutContent, openGuideModal, closeGuideModal, previewGuide, saveGuideForCurrentTool, openModal, toggleModalSize, toggleFavorite, openLoginModal, closeLoginModal, setLoginMode, handleLogin, openSubmitModal, closeSubmitModal, adaptSubType, handleSubmit, openDashboard, closeDashboard, setDashTab, adminReview, deleteTool, toggleHamburger, logout, iconFallback, autoFetchIcon, onIconFileChange, openIconEditor, closeIconEditor, ieAuto, ieFileChange, ieClear, saveToolIcon, openToolEditor, closeToolEditor, saveToolEdit, renderUsersTab, loadUsers, createUser, uploadImport, confirmImport, resetUserPassword, deleteUser, openChangePasswordModal, closeChangePasswordModal, submitChangePassword, toggleUserMenu, closeUserMenus, adminPasswordTip, openMySubmissions, closeMySubmissions, loadMySubmissions });
 
         // ============ 启动 ============
         initTheme();
