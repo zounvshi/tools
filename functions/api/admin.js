@@ -122,21 +122,22 @@ export async function onRequest(context) {
     }
 
     if (action === 'reject') {
-      let removed = null;
+      // 驳回：不再直接删除，改为标记 status='rejected' 并保存审批意见，
+      // 这样提交人可以在右上角「审核进度」里看到驳回结果与原因（可据此修改后重新提交）。
+      // 注意：驳回不删除已上传的文件，方便误驳回复原；确需清理由管理员手动处理。
+      const note = String(body.note || '').trim().slice(0, 300);
       try {
         await updateJson(env, 'pending.json', (list) => {
           const arr = Array.isArray(list) ? list : [];
           const idx = arr.findIndex((x) => String(x.id) === String(id));
           if (idx < 0) throw new Error(NOTFOUND);
-          removed = arr[idx];
-          arr.splice(idx, 1);
+          arr[idx] = { ...arr[idx], status: 'rejected', reviewNote: note, reviewedBy: payload.sub, reviewedAt: now };
           return arr;
         }, []);
       } catch (e) {
         if (String(e.message).includes(NOTFOUND)) return json({ error: '待审核项不存在' }, 404);
         throw e;
       }
-      await removeStoredFile(env, removed);
       return json({ success: true });
     }
 
