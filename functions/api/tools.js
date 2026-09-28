@@ -1,5 +1,5 @@
 // functions/api/tools.js  （公开）
-// GET：返回已上线工具 = GitHub 原始数据（只读，绝不写回） UNION R2 新增的已审数据。
+// GET：返回已上线工具 = R2 新增的已审数据（排在最前，最新上线在最上） UNION GitHub 原始数据（只读，绝不写回，排在最后）。
 //
 // 数据架构（新版）：
 //   - 原始数据：始终从 GitHub 公开 raw 读取（MIGRATE_SOURCE_URL 可配），只读，永不修改 GitHub。
@@ -29,9 +29,22 @@ export async function onRequest(context) {
     const baseAbout = base.about || '';
     const addAbout = (additions && additions.about) || '';
 
+    // 新增/已审工具按「上线时间」倒序：最新审核通过的排最上面（用户要求新上传的在最前，而非最后）；
+    // 时间戳相同/缺失时，后追加进 tools.json 的（index 更大）排在更前，保证新上传的始终在最顶。
+    const sortedAdd = addTools
+      .map((t, i) => ({ t, i }))
+      .sort((a, b) => {
+        const ta = Date.parse(a.t.reviewedAt || a.t.submittedAt || 0);
+        const tb = Date.parse(b.t.reviewedAt || b.t.submittedAt || 0);
+        if (ta !== tb) return tb - ta; // 时间戳不同 -> 新的在前
+        return b.i - a.i;              // 时间戳相同/缺失 -> 后追加的在前
+      })
+      .map((x) => x.t);
+
+    // 合并：R2 新增工具在前（最上面），GitHub 原始工具在后（最下面）
     const merged = [
+      ...sortedAdd.map((t) => ({ ...t, status: t.status || 'approved', source: 'r2' })),
       ...baseTools.map((t) => ({ ...t, status: t.status || 'approved', source: 'github' })),
-      ...addTools.map((t) => ({ ...t, status: t.status || 'approved', source: 'r2' })),
     ];
 
     // about：优先用 R2 中管理员改过的，否则用 GitHub 原始
