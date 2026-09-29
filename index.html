@@ -100,12 +100,19 @@
         .tool-author .at-symbol { color:#94a3b8; }
         .dark .tool-author .at-symbol { color:#64748b; }
 
-        .card-header { display:flex; align-items:center; gap:.75rem; margin-bottom:.5rem; }
+        .card-header { display:flex; align-items:center; gap:.75rem; margin-bottom:.35rem; }
         .card-header .name-area { flex:1; min-width:0; }
-        .card-header .name-area .tool-name { font-size:1.05rem; font-weight:700; color:#0f172a; letter-spacing:-.02em; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+        /* 工具名整行显示，最多三行，不再强制单行省略号截断；超长无空格串也能断行 */
+        .card-header .name-area .tool-name {
+            font-size:1.05rem; font-weight:700; color:#0f172a; letter-spacing:-.02em; line-height:1.35;
+            display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden;
+            overflow-wrap:anywhere; word-break:break-word;
+        }
         .dark .card-header .name-area .tool-name { color:#f1f5f9; }
-        .card-header .tag-group { display:flex; flex-wrap:wrap; gap:.3rem; flex-shrink:0; justify-content:flex-end; }
-        .card-header .tag-group .tag-exe,.card-header .tag-group .tag-web { font-size:.55rem; padding:.1rem .6rem; border-radius:999px; font-weight:700; text-transform:uppercase; letter-spacing:.04em; }
+        /* 标签独立成行（左缩进对齐工具名），不再与工具名抢同一行宽度 */
+        .card-tags { display:flex; flex-wrap:wrap; gap:.3rem; margin:0 0 .55rem 3.5rem; }
+        .card-tags:empty { display:none; }
+        .card-tags .tag-exe,.card-tags .tag-web { font-size:.55rem; padding:.1rem .6rem; border-radius:999px; font-weight:700; text-transform:uppercase; letter-spacing:.04em; }
 
         /* ===== 顶栏 ===== */
         .topbar { position:sticky; top:0; z-index:50; }
@@ -185,6 +192,15 @@
         @container (max-width: 270px) {
             .card-footer .footer-left .type-badge { display: none; }
         }
+
+        /* ===== 热榜定位：滚动到卡片并脉冲高亮 ===== */
+        @keyframes cardLocatePulse {
+            0%   { box-shadow: 0 0 0 0 rgba(14,165,233,0.55); }
+            70%  { box-shadow: 0 0 0 12px rgba(14,165,233,0); }
+            100% { box-shadow: 0 0 0 0 rgba(14,165,233,0); }
+        }
+        .card-locate { outline: 2px solid rgba(14,165,233,0.9); outline-offset: 3px; animation: cardLocatePulse 1.1s ease-out 2; }
+        .dark .card-locate { outline-color: rgba(56,189,248,0.95); }
     </style>
 </head>
 <body class="bg-[#eaf4f8] dark:bg-[#0b0f19] text-slate-800 dark:text-slate-100 min-h-screen font-sans antialiased overflow-x-hidden relative text-base transition-colors duration-500">
@@ -858,10 +874,10 @@
                             <div>
                                 <div class="card-header">
                                     <div class="tool-icon" data-initial="${escapeHtml(initial)}">${iconHtml}</div>
-                                    <div class="name-area"><div class="tool-name">${item.name}</div>${authorDisplay}</div>
-                                    <div class="tag-group">${tagHtml}</div>
+                                    <div class="name-area"><div class="tool-name" title="${escapeHtml(item.name)}">${escapeHtml(item.name)}</div>${authorDisplay}</div>
                                 </div>
-                                <div class="text-slate-600 dark:text-slate-400 text-sm leading-relaxed mt-2 mb-3 font-normal">${item.desc}</div>
+                                <div class="card-tags">${tagHtml}</div>
+                                <div class="text-slate-600 dark:text-slate-400 text-sm leading-relaxed mb-3 font-normal">${item.desc}</div>
                             </div>
                             <div class="card-footer pt-5 border-t border-slate-300/40 dark:border-slate-800/80">
                                 <div class="footer-left">
@@ -970,7 +986,7 @@
                     ? `<img src="${escapeHtml(icon)}" alt="${escapeHtml(name)}" loading="lazy" onerror="this.parentElement.textContent='${escapeHtml(initial)}'">`
                     : initial;
                 return `
-                    <div class="hot-item" onclick="openHotTool(${item.id})">
+                    <div class="hot-item" onclick="openHotTool(${item.id})" title="定位到「${escapeHtml(name)}」卡片">
                         <div class="hot-rank ${rank <= 3 ? 'top' + rank : ''}">${rank}</div>
                         <div class="hot-icon">${iconHtml}</div>
                         <div class="hot-info">
@@ -981,19 +997,57 @@
             }).join('');
         }
 
+        // 热榜点击：滚动定位到左侧对应工具卡片并高亮（不再弹出使用说明）
         function openHotTool(id) {
-            const tool = toolsData.find(t => String(t.id) === String(id));
-            if (!tool) { toast('该工具未在当前列表中'); return; }
-            trackHeat(id, 'view');
-            const card = document.querySelector(`.favorite-btn[data-id="${id}"]`)?.closest('.modern-card');
-            if (card) {
-                card.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                card.classList.add('ring-2', 'ring-sky-400', 'dark:ring-sky-500');
-                setTimeout(() => card.classList.remove('ring-2', 'ring-sky-400', 'dark:ring-sky-500'), 1600);
-            } else {
-                window.scrollTo({ top: document.querySelector('main').offsetTop - 80, behavior: 'smooth' });
+            const ok = locateTool(id);
+            if (ok) trackHeat(id, 'view');
+        }
+
+        // 定位工具：必要时清掉筛选/搜索、翻到目标页，再滚动并高亮
+        function locateTool(id) {
+            if (!toolsData.some(t => String(t.id) === String(id))) {
+                toast('该工具已不在工具列表中');
+                return false;
             }
-            openGuideModal(id);
+            let list = getFilteredTools();
+            let idx = list.findIndex(t => String(t.id) === String(id));
+            if (idx < 0) {
+                // 被当前分类/收藏/搜索条件排除掉了 —— 恢复「全部 + 空搜索」再找
+                isFavViewActive = false;
+                searchInput.value = '';
+                filterBtns.forEach(b => {
+                    b.className = 'filter-btn shrink-0 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white px-3 md:px-4 py-1.5 rounded-lg text-xs font-bold transition-all';
+                });
+                const allBtn = document.querySelector('.filter-btn[data-type="all"]');
+                if (allBtn) allBtn.className = 'filter-btn shrink-0 bg-white dark:bg-slate-800 text-slate-900 dark:text-white shadow-sm px-3 md:px-4 py-1.5 rounded-lg text-xs font-bold transition-all';
+                const favText = document.getElementById('favToggleText');
+                if (favText) favText.innerText = '收藏';
+                const favIcon = document.getElementById('favToggleIcon');
+                if (favIcon) favIcon.classList.remove('text-rose-500', 'fill-rose-500/20', 'rotate-180');
+                renderTools('all', '');
+                list = getFilteredTools();
+                idx = list.findIndex(t => String(t.id) === String(id));
+                toast('已清除筛选条件以定位该工具');
+            }
+            const targetPage = Math.floor(idx / PAGE_SIZE) + 1;
+            if (targetPage !== currentPage) goToPage(targetPage);
+            highlightCard(id);
+            return true;
+        }
+
+        // 滚动到卡片并脉冲高亮；渲染尚未完成时兜底重试一次
+        function highlightCard(id, retried) {
+            const card = document.querySelector(`.favorite-btn[data-id="${id}"]`)?.closest('.modern-card');
+            if (!card) {
+                if (!retried) setTimeout(() => highlightCard(id, true), 150);
+                return;
+            }
+            card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            card.classList.remove('card-locate');
+            void card.offsetWidth; // 重启动画
+            card.classList.add('card-locate');
+            clearTimeout(card._locateTimer);
+            card._locateTimer = setTimeout(() => card.classList.remove('card-locate'), 2400);
         }
 
         function handleCardMouseMove(e, card) {
