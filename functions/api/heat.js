@@ -1,17 +1,23 @@
 // functions/api/heat.js
-// 热度统计：记录用户查看详情、打开在线链接、下载软件三种行为，按权重累加。
-//   POST { id, action }  action ∈ { view, open, download }
-//   GET                 返回热度 Top10（含工具名称、图标）
+// 热度统计：记录查看详情、打开在线链接、下载软件、收藏、搜索命中五种行为，按权重累加。
+//   POST { id, action }            单个工具记分，action ∈ { view, open, download, favorite, search }
+//   POST { ids: [...], action }    批量记分（用于「搜索命中」一次给多个结果加分，最多 50 个）
+//   GET                            返回热度 Top10（含工具名称、图标）
 // 数据存 R2 data/heat.json：{ scores: { [toolId]: number } }
 
 import { json } from './_shared/auth.js';
 import { readJson, updateJson } from './_shared/store.js';
 
+// 权重说明：越「重」的行为代表越强的真实使用意图，分值越高
 const WEIGHTS = {
+  search: 1,    // 搜索命中（出现在搜索结果里）
   view: 1,      // 查看使用说明 / 详情
   open: 2,      // 打开在线链接
   download: 3,  // 下载软件
+  favorite: 4,  // 收藏（最强的偏好信号）
 };
+
+const MAX_BATCH = 50; // 单次批量最多记 50 个工具，防止刷分
 
 export async function onRequest(context) {
   const { request, env } = context;
@@ -24,26 +30,36 @@ export async function onRequest(context) {
   if (request.method === 'POST') {
     let body = {};
     try { body = await request.json(); } catch (e) {}
-    const id = body.id == null ? null : String(body.id);
     const action = String(body.action || '').toLowerCase();
-    if (!id || !WEIGHTS[action]) {
-      return json({ error: '参数错误：需要 id 和 action（view / open / download）' }, 400);
+    if (!WEIGHTS[action]) {
+      return json({ error: '参数错误：action 需为 search / view / open / download / favorite' }, 400);
     }
-    return await addHeat(env, id, action);
+
+    // 支持单个 id 或批量 ids
+    let ids = [];
+    if (Array.isArray(body.ids)) ids = body.ids.map(String).filter(Boolean);
+    else if (body.id != null) ids = [String(body.id)];
+    if (ids.length === 0) {
+      return json({ error: '参数错误：需要 id 或 ids' }, 400);
+    }
+    ids = Array.from(new Set(ids)).slice(0, MAX_BATCH);
+
+    return await addHeat(env, ids, action);
   }
 
   return new Response('Method Not Allowed', { status: 405 });
 }
 
-async function addHeat(env, id, action) {
+async function addHeat(env, ids, action) {
+  const add = WEIGHTS[action];
   await updateJson(
     env,
     'heat.json',
     (prev) => {
       const scores = prev && typeof prev === 'object' && prev.scores ? prev.scores : {};
-      const add = WEIGHTS[action];
-      const old = Number(scores[id] || 0);
-      scores[id] = old + add;
+      ids.forEach((id) => {
+        scores[id] = Number(scores[id] || 0) + add;
+      });
       return { scores };
     },
     { scores: {} }
