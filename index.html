@@ -141,6 +141,32 @@
         @keyframes menuPop { from { opacity:0; transform:translateY(-6px) scale(.97); } to { opacity:1; transform:none; } }
 
         .hidden-force { display:none !important; }
+
+        /* ===== 分页 ===== */
+        .page-btn { min-width: 2.25rem; height: 2.25rem; display: inline-flex; align-items: center; justify-content: center; border-radius: 0.65rem; font-size: 0.85rem; font-weight: 700; color: #475569; background: rgba(255,255,255,0.4); border: 1px solid rgba(255,255,255,0.6); transition: all .2s; }
+        .dark .page-btn { color: #94a3b8; background: rgba(30,41,59,0.4); border-color: rgba(255,255,255,0.08); }
+        .page-btn:hover:not(:disabled) { background: rgba(255,255,255,0.85); color: #0ea5e9; }
+        .dark .page-btn:hover:not(:disabled) { background: rgba(30,41,59,0.7); color: #38bdf8; }
+        .page-btn.active { background: #0ea5e9; color: #fff; border-color: #0ea5e9; box-shadow: 0 4px 12px rgba(14,165,233,0.35); }
+        .dark .page-btn.active { background: #0ea5e9; color: #fff; border-color: #0ea5e9; }
+        .page-btn:disabled { opacity: 0.35; cursor: not-allowed; }
+        .page-arrow { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; }
+        .page-ellipsis { min-width: 2.25rem; height: 2.25rem; display: inline-flex; align-items: center; justify-content: center; color: #94a3b8; font-size: 0.85rem; font-weight: 700; }
+
+        /* ===== 热门榜 ===== */
+        .hot-item { display: flex; align-items: center; gap: 0.7rem; padding: 0.55rem 0.5rem; border-radius: 0.875rem; transition: all .2s; cursor: pointer; }
+        .hot-item:hover { background: rgba(255,255,255,0.55); }
+        .dark .hot-item:hover { background: rgba(30,41,59,0.45); }
+        .hot-rank { width: 1.6rem; height: 1.6rem; flex-shrink: 0; display: flex; align-items: center; justify-content: center; border-radius: 0.5rem; font-size: 0.75rem; font-weight: 800; color: #64748b; background: rgba(148,163,184,0.2); }
+        .hot-rank.top1 { background: linear-gradient(135deg, #fbbf24, #f59e0b); color: #fff; box-shadow: 0 3px 8px rgba(245,158,11,0.35); }
+        .hot-rank.top2 { background: linear-gradient(135deg, #94a3b8, #64748b); color: #fff; }
+        .hot-rank.top3 { background: linear-gradient(135deg, #f87171, #ea580c); color: #fff; }
+        .hot-icon { width: 34px; height: 34px; border-radius: 8px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px; color: #fff; background: linear-gradient(135deg, #38bdf8, #6366f1); overflow: hidden; }
+        .hot-icon img { width: 100%; height: 100%; object-fit: cover; }
+        .hot-info { flex: 1; min-width: 0; }
+        .hot-name { font-size: 0.85rem; font-weight: 700; color: #0f172a; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .dark .hot-name { color: #f1f5f9; }
+        .hot-heat { font-size: 0.7rem; color: #f97316; font-weight: 700; display: flex; align-items: center; gap: 0.2rem; }
     </style>
 </head>
 <body class="bg-[#eaf4f8] dark:bg-[#0b0f19] text-slate-800 dark:text-slate-100 min-h-screen font-sans antialiased overflow-x-hidden relative text-base transition-colors duration-500">
@@ -234,9 +260,23 @@
         </div>
     </div>
 
-    <!-- ===== 卡片网格 ===== -->
+    <!-- ===== 卡片网格 + 侧边栏 ===== -->
     <main class="max-w-[1600px] mx-auto px-5 md:px-8 pt-10 pb-28">
-        <div id="cardGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-8"></div>
+        <div class="flex flex-col lg:flex-row gap-8 items-start">
+            <aside id="hotSidebar" class="hidden lg:block w-full lg:w-72 shrink-0 glass-panel rounded-3xl p-5 sticky top-24 self-start order-first">
+                <div class="flex items-center gap-2 mb-4 pb-3 border-b border-slate-200/60 dark:border-slate-700/40">
+                    <span class="text-xl">🔥</span>
+                    <h3 class="text-base font-black text-slate-900 dark:text-white font-mono">热门排行榜</h3>
+                </div>
+                <div id="hotList" class="space-y-1 min-h-[120px]">
+                    <div class="text-center text-xs text-slate-400 py-6 italic">加载中...</div>
+                </div>
+            </aside>
+            <div class="flex-1 min-w-0 w-full">
+                <div id="cardGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"></div>
+                <div id="pagination" class="hidden mt-12 flex flex-wrap items-center justify-center gap-2"></div>
+            </div>
+        </div>
     </main>
 
     <!-- ===== 关于我们模态 ===== -->
@@ -341,6 +381,7 @@
                 <div><label id="subUrlLabel" class="block text-xs font-bold text-slate-600 dark:text-slate-400 mb-1.5">访问/下载地址（不传文件时必填）</label><input id="subUrl" type="text" placeholder="https://... 或留空改为上传文件" class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white rounded-xl p-3 text-sm focus:outline-none focus:border-purple-600"></div>
                 <div><label class="block text-xs font-bold text-slate-600 dark:text-slate-400 mb-1.5">上传文件（可选：.exe / .zip / 压缩包等）</label><input id="subFile" type="file" accept=".exe,.msi,.zip,.rar,.7z,.dmg,.deb,.apk,application/*" class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white rounded-xl p-2.5 text-sm focus:outline-none focus:border-purple-600"><p class="text-[11px] text-slate-400 mt-1.5 leading-relaxed">选了文件会直接存到仓库并生成下载链接，无需再填地址。未配置 R2 时单个文件 ≤ 45MB；配置了 R2 可上传更大文件。不传文件时请填上面的网址。两者都不填无法提交。</p></div>
                 <div><label class="block text-xs font-bold text-slate-600 dark:text-slate-400 mb-1.5">标签（用英文逗号 , 分隔）</label><input id="subTags" type="text" placeholder="效率, 数字化" class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white rounded-xl p-3 text-sm focus:outline-none focus:border-purple-600"></div>
+                <div><label class="block text-xs font-bold text-slate-600 dark:text-slate-400 mb-1.5">使用说明（可选）</label><textarea id="subGuide" rows="4" placeholder="写清楚怎么装、怎么用，一行一步；例如：&#10;1. 双击运行，无需安装&#10;2. 右键托盘图标可设置开机自启" class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white rounded-xl p-3 text-sm focus:outline-none focus:border-purple-600"></textarea><p class="text-[11px] text-slate-400 mt-1.5 leading-relaxed">审核通过后显示在工具卡片的「使用说明」里；现在不填，管理员也能在首页点开「使用说明」帮你补。</p></div>
                 <div class="pt-2 flex justify-end gap-3">
                     <button type="button" onclick="closeSubmitModal()" class="bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 text-xs px-4 py-2.5 rounded-xl font-bold border border-slate-300 dark:border-slate-700">取消</button>
                     <button type="submit" class="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white text-xs px-5 py-2.5 rounded-xl font-bold shadow-md active:scale-95 transition-all">提交审核</button>
@@ -503,7 +544,7 @@
             const trigger = '<button type="button" id="navUserTrigger' + suffix + '" onclick="toggleUserMenu(\'' + scope + '\', event)" aria-haspopup="menu" aria-expanded="false" title="账号菜单" class="' + triggerCls + '">'
                 + avatar + '<span class="truncate max-w-[110px]">' + name + '</span>' + chevron + '</button>';
             const cpItem = admin
-                ? '<button type="button" onclick="adminPasswordTip(); closeUserMenus();" class="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-xs font-bold text-slate-400 dark:text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all"><span>🔑</span>修改密码<span class="ml-auto text-[10px] font-normal">需后台修改</span></button>'
+                ? '<button type="button" onclick="adminPasswordTip(); closeUserMenus();" class="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-xs font-bold text-slate-400 dark:text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all"><span>🔑</span>修改密码</button>'
                 : '<button type="button" onclick="openChangePasswordModal(); closeUserMenus();" class="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-xs font-bold text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all"><span>🔑</span>修改密码</button>';
             const progressItem = '<button type="button" onclick="openMySubmissions(); closeUserMenus();" class="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-xs font-bold text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all"><span>📋</span>审核进度</button>';
             const roleBadge = admin
@@ -511,7 +552,7 @@
                 : '<span class="shrink-0 text-[10px] font-bold px-1.5 py-0.5 rounded-md bg-sky-100 dark:bg-sky-900/40 text-sky-600 dark:text-sky-300">用户</span>';
             const menuItems = '<div class="px-3 py-2.5 border-b border-slate-200/80 dark:border-slate-700/60">'
                 + '<div class="text-[10px] font-bold tracking-widest uppercase text-slate-400 dark:text-slate-500">当前登录</div>'
-                + '<div class="flex items-center gap-2 mt-1"><span class="text-sm font-black text-slate-900 dark:text-white truncate">' + name + '</span>' + roleBadge + '</div>'
+                + '<div class="flex items-center gap-2 mt-1"><span class="text-sm font-black text-slate-900 dark:text-white truncate min-w-0">' + name + '</span>' + roleBadge + '</div>'
                 + '</div>'
                 + '<div class="py-1.5 px-1.5 space-y-0.5">' + progressItem + cpItem
                 + '<button type="button" onclick="logout()" class="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-xs font-bold text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-900/30 transition-all"><span>🚪</span>退出登录</button>'
@@ -521,7 +562,7 @@
                     + '<div id="navUserMenuM" class="hidden mt-1.5 w-full bg-white/95 dark:bg-slate-900/95 border border-slate-200 dark:border-slate-700 rounded-2xl shadow-lg overflow-hidden">' + menuItems + '</div></div>';
             }
             return '<div id="navUserArea" class="relative">' + trigger
-                + '<div id="navUserMenu" class="hidden absolute right-0 top-full mt-2 w-56 bg-white/95 dark:bg-slate-900/95 border border-slate-200 dark:border-slate-700 rounded-2xl shadow-xl overflow-hidden z-[55]">' + menuItems + '</div></div>';
+                + '<div id="navUserMenu" class="hidden absolute right-0 top-full mt-2 w-auto min-w-[8.5rem] max-w-[15rem] bg-white/95 dark:bg-slate-900/95 border border-slate-200 dark:border-slate-700 rounded-2xl shadow-xl overflow-hidden z-[55]">' + menuItems + '</div></div>';
         }
 
         function userMenuEls(scope) {
@@ -606,6 +647,12 @@
         const favToggle = document.getElementById('favToggle');
         let isFavViewActive = false;
 
+        const PAGE_SIZE = 9;
+        let currentPage = 1;
+        let heatData = [];
+        const paginationEl = document.getElementById('pagination');
+        const hotListEl = document.getElementById('hotList');
+
         const modal = document.getElementById('modal-overlay');
         const modalContainer = document.getElementById('modalContainer');
         const modalTitle = document.getElementById('modal-title');
@@ -662,6 +709,7 @@
                 const local = currentFavIds().map(String);
                 const merged = [...new Set([...remote, ...local])];
                 applyFavIds(merged);
+                resetPage();
                 renderTools(getActiveFilterType(), searchInput.value);
                 // 本机有云端没有的 → 补传，实现「先本机收藏、后登录」也不丢
                 if (merged.some(x => !remote.includes(x)) || merged.length !== remote.length) {
@@ -707,6 +755,7 @@
             loadFavorites();   // 每次拉到数据后都要回填本地收藏，否则刷新后收藏丢失
             hideLoading();
             renderTools();
+            loadHotList();     // 拉右侧热门榜
             syncFavorites();   // 登录状态下再与云端对齐（异步，不阻塞首屏）
         }
         async function loadPending() {
@@ -744,8 +793,7 @@
             return active ? active.dataset.type : 'all';
         }
 
-        function renderTools(filterType = 'all', keyword = '') {
-            if (isLoading) return;
+        function getFilteredTools(filterType = getActiveFilterType(), keyword = searchInput.value) {
             let filtered = toolsData;
             if (filterType === 'favorite') filtered = filtered.filter(i => i.favorite === true);
             else if (filterType !== 'all') filtered = filtered.filter(i => i.type === filterType);
@@ -753,15 +801,30 @@
                 const kw = keyword.toLowerCase();
                 filtered = filtered.filter(i => i.name.toLowerCase().includes(kw) || i.desc.toLowerCase().includes(kw) || i.tags.some(t => t.toLowerCase().includes(kw)));
             }
+            return filtered;
+        }
+
+        function resetPage() { currentPage = 1; }
+
+        function renderTools(filterType = 'all', keyword = '') {
+            if (isLoading) return;
+            const filtered = getFilteredTools(filterType, keyword);
             favCount.innerText = toolsData.filter(i => i.favorite).length;
             totalCount.innerText = toolsData.length < 10 ? `0${toolsData.length}` : toolsData.length;
 
             if (filtered.length === 0) {
                 grid.innerHTML = `<div class="col-span-full text-center py-24 text-slate-500 dark:text-slate-400 font-mono text-sm tracking-wider">${keyword.trim() ? 'NO_MATCHED // 无匹配工具' : '暂无工具，欢迎提交'}</div>`;
+                paginationEl.classList.add('hidden');
+                paginationEl.innerHTML = '';
                 return;
             }
 
-            grid.innerHTML = filtered.map(item => {
+            const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+            if (currentPage > totalPages) currentPage = totalPages;
+            const start = (currentPage - 1) * PAGE_SIZE;
+            const pageItems = filtered.slice(start, start + PAGE_SIZE);
+
+            grid.innerHTML = pageItems.map(item => {
                 const initial = String(item.name || '?').trim().charAt(0).toUpperCase() || '?';
                 const effIcon = (item.icon && item.icon.trim() !== '') ? item.icon.trim() : autoIconUrl(item.url);
                 const iconHtml = effIcon
@@ -788,17 +851,120 @@
                                         <svg class="w-4 h-4 transition-all duration-200 ${item.favorite ? 'text-rose-500 fill-rose-500 scale-110' : 'text-slate-400 dark:text-slate-500 hover:text-rose-500'}" viewBox="0 0 24 24" fill="${item.favorite ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
                                     </button>
                                     <span class="px-2.5 py-1 text-[10px] font-bold font-mono rounded-lg bg-white/70 dark:bg-slate-800/70 text-slate-700 dark:text-slate-300 border border-white/80 dark:border-slate-700/60 shadow-sm">${item.type === 'exe' ? 'EXE' : 'WEB'}</span>
-                                    <button class="guide-text-link" onclick="openGuideModal(${item.id})">使用说明</button>
+                                    <button class="guide-text-link" onclick="openGuideModal(${item.id}); trackHeat(${item.id}, 'view');">使用说明</button>
                                 </div>
                                 <div>
                                     ${item.type === 'exe'
-                                        ? `<a href="${escapeHtml(effUrl)}" ${effUrl === '#' ? 'onclick="toast(\'请等待管理员补全下载链接\');return false;"' : 'download'} class="inline-block bg-slate-900 dark:bg-sky-500 hover:bg-slate-800 dark:hover:bg-sky-400 text-white dark:text-slate-950 text-xs font-bold px-5 py-2 rounded-xl shadow-md active:scale-95 transition-all duration-300">${item.fileName ? '下载：' + escapeHtml(item.fileName.slice(0, 16)) : '下载软件'}</a>`
-                                        : `<button onclick="openModal('${escapeHtml(item.name)}', '${escapeHtml(effUrl)}')" class="bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-100 text-xs font-bold px-5 py-2 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm active:scale-95 transition-all duration-300">在线使用</button>`}
+                                        ? `<a href="${escapeHtml(effUrl)}" onclick="return handleDownload(${item.id}, '${escapeHtml(effUrl)}')" ${effUrl !== '#' ? 'download' : ''} class="inline-block bg-slate-900 dark:bg-sky-500 hover:bg-slate-800 dark:hover:bg-sky-400 text-white dark:text-slate-950 text-xs font-bold px-5 py-2 rounded-xl shadow-md active:scale-95 transition-all duration-300">${item.fileName ? '下载：' + escapeHtml(item.fileName.slice(0, 16)) : '下载软件'}</a>`
+                                        : `<button onclick="openModal('${escapeHtml(item.name)}', '${escapeHtml(effUrl)}'); trackHeat(${item.id}, 'open');" class="bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-100 text-xs font-bold px-5 py-2 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm active:scale-95 transition-all duration-300">在线使用</button>`}
                                 </div>
                             </div>
                         </div>
                     </div>`;
             }).join('');
+
+            renderPagination(totalPages);
+        }
+
+        function renderPagination(totalPages) {
+            if (totalPages <= 1) { paginationEl.classList.add('hidden'); paginationEl.innerHTML = ''; return; }
+            let start = Math.max(1, currentPage - 2);
+            let end = Math.min(totalPages, start + 4);
+            if (end - start < 4) start = Math.max(1, end - 4);
+            const pages = [];
+            for (let i = start; i <= end; i++) pages.push(i);
+
+            let html = `<button type="button" onclick="goToPage(${currentPage - 1})" class="page-btn page-arrow" ${currentPage === 1 ? 'disabled' : ''}>&lt;</button>`;
+            if (start > 1) {
+                html += `<button type="button" onclick="goToPage(1)" class="page-btn ${1 === currentPage ? 'active' : ''}">1</button>`;
+                if (start > 2) html += `<span class="page-ellipsis">…</span>`;
+            }
+            pages.forEach(p => {
+                html += `<button type="button" onclick="goToPage(${p})" class="page-btn ${p === currentPage ? 'active' : ''}">${p}</button>`;
+            });
+            if (end < totalPages) {
+                if (end < totalPages - 1) html += `<span class="page-ellipsis">…</span>`;
+                html += `<button type="button" onclick="goToPage(${totalPages})" class="page-btn ${totalPages === currentPage ? 'active' : ''}">${totalPages}</button>`;
+            }
+            html += `<button type="button" onclick="goToPage(${currentPage + 1})" class="page-btn page-arrow" ${currentPage === totalPages ? 'disabled' : ''}>&gt;</button>`;
+            paginationEl.innerHTML = html;
+            paginationEl.classList.remove('hidden');
+        }
+
+        function goToPage(page) {
+            const totalPages = Math.max(1, Math.ceil(getFilteredTools().length / PAGE_SIZE));
+            if (page < 1 || page > totalPages || page === currentPage) return;
+            currentPage = page;
+            renderTools(getActiveFilterType(), searchInput.value);
+            const mainTop = document.querySelector('main').offsetTop - 80;
+            window.scrollTo({ top: Math.max(0, mainTop), behavior: 'smooth' });
+        }
+
+        function handleDownload(id, url) {
+            if (url === '#') { toast('请等待管理员补全下载链接'); return false; }
+            trackHeat(id, 'download');
+            return true;
+        }
+
+        function trackHeat(id, action) {
+            if (!id || !/^(view|open|download)$/.test(action)) return;
+            fetch('/api/heat', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id, action }), cache: 'no-store' })
+                .then(r => r.ok ? r.json() : null)
+                .then(d => { if (d && Array.isArray(d.list)) { heatData = d.list; renderHotList(); } })
+                .catch(() => {});
+        }
+
+        async function loadHotList() {
+            if (!hotListEl) return;
+            try {
+                const res = await fetch('/api/heat', { cache: 'no-store' });
+                if (!res.ok) throw new Error('heat-get-' + res.status);
+                const d = await res.json();
+                heatData = Array.isArray(d.list) ? d.list : [];
+            } catch (e) { heatData = []; }
+            renderHotList();
+        }
+
+        function renderHotList() {
+            if (!hotListEl) return;
+            if (heatData.length === 0) {
+                hotListEl.innerHTML = '<div class="text-center text-xs text-slate-400 py-6 italic">暂无热度数据</div>';
+                return;
+            }
+            hotListEl.innerHTML = heatData.slice(0, 10).map((item, idx) => {
+                const rank = idx + 1;
+                const tool = toolsData.find(t => String(t.id) === String(item.id));
+                const name = tool ? tool.name : (item.name || '未知工具');
+                const icon = tool && tool.icon ? tool.icon : (item.icon || '');
+                const initial = String(name).trim().charAt(0).toUpperCase() || '?';
+                const iconHtml = icon
+                    ? `<img src="${escapeHtml(icon)}" alt="${escapeHtml(name)}" loading="lazy" onerror="this.parentElement.textContent='${escapeHtml(initial)}'">`
+                    : initial;
+                return `
+                    <div class="hot-item" onclick="openHotTool(${item.id})">
+                        <div class="hot-rank ${rank <= 3 ? 'top' + rank : ''}">${rank}</div>
+                        <div class="hot-icon">${iconHtml}</div>
+                        <div class="hot-info">
+                            <div class="hot-name">${escapeHtml(name)}</div>
+                            <div class="hot-heat"><span>🔥</span>${Number(item.heat || 0)}</div>
+                        </div>
+                    </div>`;
+            }).join('');
+        }
+
+        function openHotTool(id) {
+            const tool = toolsData.find(t => String(t.id) === String(id));
+            if (!tool) { toast('该工具未在当前列表中'); return; }
+            trackHeat(id, 'view');
+            const card = document.querySelector(`.favorite-btn[data-id="${id}"]`)?.closest('.modern-card');
+            if (card) {
+                card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                card.classList.add('ring-2', 'ring-sky-400', 'dark:ring-sky-500');
+                setTimeout(() => card.classList.remove('ring-2', 'ring-sky-400', 'dark:ring-sky-500'), 1600);
+            } else {
+                window.scrollTo({ top: document.querySelector('main').offsetTop - 80, behavior: 'smooth' });
+            }
+            openGuideModal(id);
         }
 
         function handleCardMouseMove(e, card) {
@@ -995,7 +1161,8 @@
             fd.append('author', document.getElementById('subAuthor').value.trim());
             fd.append('url', url);
             fd.append('tags', document.getElementById('subTags').value);
-            fd.append('guide', '');
+            const guideEl = document.getElementById('subGuide');
+            fd.append('guide', guideEl ? guideEl.value.trim() : '');
             if (file) fd.append('file', file);
             if (iconFile) fd.append('iconFile', iconFile);
             try {
@@ -1417,19 +1584,19 @@
             const normalBtn = "filter-btn shrink-0 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white px-3 md:px-4 py-1.5 rounded-lg text-xs font-bold transition-all";
             if (isFavViewActive) {
                 document.getElementById('favToggleText').innerText = '返回'; document.getElementById('favToggleIcon').classList.add('text-rose-500', 'fill-rose-500/20', 'rotate-180');
-                filterBtns.forEach(b => b.className = normalBtn); renderTools('favorite', searchInput.value);
+                filterBtns.forEach(b => b.className = normalBtn); resetPage(); renderTools('favorite', searchInput.value);
             } else {
                 document.getElementById('favToggleText').innerText = '收藏'; document.getElementById('favToggleIcon').classList.remove('text-rose-500', 'fill-rose-500/20', 'rotate-180');
-                document.querySelector('.filter-btn[data-type="all"]').className = activeBtn; renderTools('all', searchInput.value);
+                document.querySelector('.filter-btn[data-type="all"]').className = activeBtn; resetPage(); renderTools('all', searchInput.value);
             }
         });
         filterBtns.forEach(btn => btn.addEventListener('click', function () {
             isFavViewActive = false; document.getElementById('favToggleText').innerText = '收藏'; document.getElementById('favToggleIcon').classList.remove('text-rose-500', 'fill-rose-500/20', 'rotate-180');
             filterBtns.forEach(b => b.className = "filter-btn shrink-0 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white px-3 md:px-4 py-1.5 rounded-lg text-xs font-bold transition-all");
             this.className = "filter-btn shrink-0 bg-white dark:bg-slate-800 text-slate-900 dark:text-white shadow-sm px-3 md:px-4 py-1.5 rounded-lg text-xs font-bold transition-all";
-            renderTools(this.dataset.type, searchInput.value);
+            resetPage(); renderTools(this.dataset.type, searchInput.value);
         }));
-        searchInput.addEventListener('input', function () { renderTools(getActiveFilterType(), this.value); });
+        searchInput.addEventListener('input', function () { resetPage(); renderTools(getActiveFilterType(), this.value); });
         modal.addEventListener('click', (e) => { if (e.target === modal) document.getElementById('close-modal').click(); });
         guideOverlay.addEventListener('click', (e) => { if (e.target === guideOverlay) closeGuideModal(); });
         aboutOverlay.addEventListener('click', (e) => { if (e.target === aboutOverlay) closeAboutModal(); });
@@ -1451,11 +1618,12 @@
         window.addEventListener('storage', function (e) {
             if (e.key !== 'favTools') return;
             loadFavorites();
+            resetPage();
             renderTools(getActiveFilterType(), searchInput.value);
         });
 
         // ============ 全局暴露 ============
-        Object.assign(window, { toggleDarkMode, handleCardMouseMove, openAboutModal, closeAboutModal, previewAbout, saveAboutContent, openGuideModal, closeGuideModal, previewGuide, saveGuideForCurrentTool, openModal, toggleModalSize, toggleFavorite, openLoginModal, closeLoginModal, setLoginMode, handleLogin, openSubmitModal, closeSubmitModal, adaptSubType, handleSubmit, openDashboard, closeDashboard, setDashTab, adminReview, deleteTool, toggleHamburger, logout, iconFallback, autoFetchIcon, onIconFileChange, openIconEditor, closeIconEditor, ieAuto, ieFileChange, ieClear, saveToolIcon, openToolEditor, closeToolEditor, saveToolEdit, renderUsersTab, loadUsers, createUser, uploadImport, confirmImport, resetUserPassword, deleteUser, openChangePasswordModal, closeChangePasswordModal, submitChangePassword, toggleUserMenu, closeUserMenus, adminPasswordTip, openMySubmissions, closeMySubmissions, loadMySubmissions });
+        Object.assign(window, { toggleDarkMode, handleCardMouseMove, openAboutModal, closeAboutModal, previewAbout, saveAboutContent, openGuideModal, closeGuideModal, previewGuide, saveGuideForCurrentTool, openModal, toggleModalSize, toggleFavorite, openLoginModal, closeLoginModal, setLoginMode, handleLogin, openSubmitModal, closeSubmitModal, adaptSubType, handleSubmit, openDashboard, closeDashboard, setDashTab, adminReview, deleteTool, toggleHamburger, logout, iconFallback, autoFetchIcon, onIconFileChange, openIconEditor, closeIconEditor, ieAuto, ieFileChange, ieClear, saveToolIcon, openToolEditor, closeToolEditor, saveToolEdit, renderUsersTab, loadUsers, createUser, uploadImport, confirmImport, resetUserPassword, deleteUser, openChangePasswordModal, closeChangePasswordModal, submitChangePassword, toggleUserMenu, closeUserMenus, adminPasswordTip, openMySubmissions, closeMySubmissions, loadMySubmissions, goToPage, resetPage, handleDownload, trackHeat, openHotTool, loadHotList, renderHotList });
 
         // ============ 启动 ============
         initTheme();
