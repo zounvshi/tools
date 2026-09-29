@@ -109,8 +109,8 @@
             overflow-wrap:anywhere; word-break:break-word;
         }
         .dark .card-header .name-area .tool-name { color:#f1f5f9; }
-        /* 标签独立成行（左缩进对齐工具名），不再与工具名抢同一行宽度 */
-        .card-tags { display:flex; flex-wrap:wrap; gap:.3rem; margin:0 0 .55rem 3.5rem; }
+        /* 标签独立成行并左对齐（不再与工具名抢同一行宽度） */
+        .card-tags { display:flex; flex-wrap:wrap; gap:.3rem; justify-content:flex-start; margin:0 0 .55rem; }
         .card-tags:empty { display:none; }
         .card-tags .tag-exe,.card-tags .tag-web { font-size:.55rem; padding:.1rem .6rem; border-radius:999px; font-weight:700; text-transform:uppercase; letter-spacing:.04em; }
 
