@@ -167,6 +167,24 @@
         .hot-name { font-size: 0.85rem; font-weight: 700; color: #0f172a; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .dark .hot-name { color: #f1f5f9; }
         .hot-heat { font-size: 0.7rem; color: #f97316; font-weight: 700; display: flex; align-items: center; gap: 0.2rem; }
+
+        /* ===== 排版稳健性：按钮文字永不折行 ===== */
+        body button, body a.btn-nowrap { white-space: nowrap; word-break: keep-all; }
+
+        /* ===== 卡片底部行：空间不足时整体换行，而不是把文字挤成两行 ===== */
+        .card-inner { container-type: inline-size; }
+        .card-footer { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: .55rem .75rem; }
+        .card-footer .footer-left { display: flex; align-items: center; gap: .5rem; flex-shrink: 0; }
+        .card-footer .footer-left .favorite-btn,
+        .card-footer .footer-left .type-badge { flex-shrink: 0; }
+        .card-footer .footer-right { flex: 0 1 auto; margin-left: auto; max-width: 100%; min-width: 0; }
+        .card-footer .footer-right .main-action {
+            white-space: nowrap; max-width: 100%; overflow: hidden; text-overflow: ellipsis; vertical-align: bottom;
+        }
+        /* 卡片内容较窄时隐藏底部重复的类型徽章（按钮已区分「下载软件 / 在线使用」），把空间让给主按钮 */
+        @container (max-width: 270px) {
+            .card-footer .footer-left .type-badge { display: none; }
+        }
     </style>
 </head>
 <body class="bg-[#eaf4f8] dark:bg-[#0b0f19] text-slate-800 dark:text-slate-100 min-h-screen font-sans antialiased overflow-x-hidden relative text-base transition-colors duration-500">
@@ -178,13 +196,13 @@
     <!-- ===== 全局顶栏 ===== -->
     <nav class="topbar glass-panel border-x-0 border-t-0 rounded-none">
         <div class="max-w-[1600px] mx-auto px-5 md:px-8 py-3 flex items-center justify-between gap-3">
-            <div class="flex items-center gap-3">
-                <span class="bg-slate-900 dark:bg-sky-500 text-white dark:text-slate-950 text-xs font-black tracking-widest px-3 py-1 rounded-lg shadow-md">TOOL KIT</span>
-                <span class="text-slate-700 dark:text-slate-200 text-sm font-bold tracking-wide hidden sm:inline">高效数字工作流平台</span>
+            <div class="flex items-center gap-3 min-w-0">
+                <span class="bg-slate-900 dark:bg-sky-500 text-white dark:text-slate-950 text-xs font-black tracking-widest px-3 py-1 rounded-lg shadow-md shrink-0 whitespace-nowrap">TOOL KIT</span>
+                <span class="text-slate-700 dark:text-slate-200 text-sm font-bold tracking-wide hidden sm:inline truncate">高效数字工作流平台</span>
             </div>
 
             <!-- 桌面端右区 -->
-            <div class="hidden md:flex items-center gap-2">
+            <div class="hidden md:flex items-center gap-2 shrink-0">
                 <button onclick="openAboutModal()" class="topbar-link px-3 py-2 rounded-xl text-xs font-bold hover:bg-white/60 dark:hover:bg-slate-800 transition-all">关于我们</button>
                 <button onclick="openSubmitModal()" class="bg-white/70 dark:bg-slate-800/70 hover:bg-white dark:hover:bg-slate-700 border border-white/80 dark:border-slate-700 text-slate-700 dark:text-slate-200 px-4 py-2 rounded-xl text-xs font-bold transition-all shadow-sm">＋ 提交工具</button>
                 <button id="navAdminBtn" onclick="openDashboard()" class="hidden bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white px-4 py-2 rounded-xl text-xs font-bold transition-all shadow-md">🛠️ 管理后台</button>
@@ -218,17 +236,17 @@
             <div class="grid grid-cols-3 gap-3 md:gap-5 w-full lg:w-auto lg:min-w-[520px]">
                 <div class="glass-panel rounded-2xl p-4 md:p-5 text-center relative overflow-hidden">
                     <div class="absolute top-0 left-0 w-full h-[3px] bg-sky-500"></div>
-                    <div class="text-slate-500 dark:text-slate-400 text-[10px] md:text-xs mb-1 font-mono tracking-widest uppercase font-bold">Total</div>
+                    <div class="text-slate-500 dark:text-slate-400 text-[10px] md:text-xs mb-1 font-mono tracking-widest uppercase font-bold whitespace-nowrap">Total</div>
                     <div class="text-3xl md:text-4xl font-black text-slate-900 dark:text-white font-mono" id="totalCount">0</div>
                 </div>
                 <div class="glass-panel rounded-2xl p-4 md:p-5 text-center relative overflow-hidden">
                     <div class="absolute top-0 left-0 w-full h-[3px] bg-purple-500"></div>
-                    <div class="text-slate-500 dark:text-slate-400 text-[10px] md:text-xs mb-1 font-mono tracking-widest uppercase font-bold">Dimension</div>
+                    <div class="text-slate-500 dark:text-slate-400 text-[10px] md:text-xs mb-1 font-mono tracking-widest uppercase font-bold whitespace-nowrap">Dimension</div>
                     <div class="text-3xl md:text-4xl font-black text-slate-900 dark:text-white font-mono">02</div>
                 </div>
                 <div class="glass-panel rounded-2xl p-4 md:p-5 text-center relative overflow-hidden">
                     <div class="absolute top-0 left-0 w-full h-[3px] bg-rose-500"></div>
-                    <div class="text-slate-500 dark:text-slate-400 text-[10px] md:text-xs mb-1 font-mono tracking-widest uppercase font-bold">Favorites</div>
+                    <div class="text-slate-500 dark:text-slate-400 text-[10px] md:text-xs mb-1 font-mono tracking-widest uppercase font-bold whitespace-nowrap">Favorites</div>
                     <div class="text-3xl md:text-4xl font-black text-slate-900 dark:text-white font-mono" id="favCount">0</div>
                 </div>
             </div>
@@ -273,7 +291,7 @@
                 </div>
             </aside>
             <div class="flex-1 min-w-0 w-full">
-                <div id="cardGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"></div>
+                <div id="cardGrid" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 xl:gap-8"></div>
                 <div id="pagination" class="hidden mt-12 flex flex-wrap items-center justify-center gap-2"></div>
             </div>
         </div>
@@ -845,18 +863,18 @@
                                 </div>
                                 <div class="text-slate-600 dark:text-slate-400 text-sm leading-relaxed mt-2 mb-3 font-normal">${item.desc}</div>
                             </div>
-                            <div class="flex items-center justify-between pt-5 border-t border-slate-300/40 dark:border-slate-800/80">
-                                <div class="flex items-center gap-2">
+                            <div class="card-footer pt-5 border-t border-slate-300/40 dark:border-slate-800/80">
+                                <div class="footer-left">
                                     <button onclick="toggleFavorite(${item.id})" class="favorite-btn p-2 bg-white/70 dark:bg-slate-800/70 hover:bg-white dark:hover:bg-slate-800 rounded-xl border border-white/80 dark:border-slate-700/60 transition-all shadow-sm focus:outline-none" data-id="${item.id}">
                                         <svg class="w-4 h-4 transition-all duration-200 ${item.favorite ? 'text-rose-500 fill-rose-500 scale-110' : 'text-slate-400 dark:text-slate-500 hover:text-rose-500'}" viewBox="0 0 24 24" fill="${item.favorite ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
                                     </button>
-                                    <span class="px-2.5 py-1 text-[10px] font-bold font-mono rounded-lg bg-white/70 dark:bg-slate-800/70 text-slate-700 dark:text-slate-300 border border-white/80 dark:border-slate-700/60 shadow-sm">${item.type === 'exe' ? 'EXE' : 'WEB'}</span>
+                                    <span class="type-badge px-2.5 py-1 text-[10px] font-bold font-mono rounded-lg bg-white/70 dark:bg-slate-800/70 text-slate-700 dark:text-slate-300 border border-white/80 dark:border-slate-700/60 shadow-sm">${item.type === 'exe' ? 'EXE' : 'WEB'}</span>
                                     <button class="guide-text-link" onclick="openGuideModal(${item.id}); trackHeat(${item.id}, 'view');">使用说明</button>
                                 </div>
-                                <div>
+                                <div class="footer-right">
                                     ${item.type === 'exe'
-                                        ? `<a href="${escapeHtml(effUrl)}" onclick="return handleDownload(${item.id}, '${escapeHtml(effUrl)}')" ${effUrl !== '#' ? 'download' : ''} class="inline-block bg-slate-900 dark:bg-sky-500 hover:bg-slate-800 dark:hover:bg-sky-400 text-white dark:text-slate-950 text-xs font-bold px-5 py-2 rounded-xl shadow-md active:scale-95 transition-all duration-300">${item.fileName ? '下载：' + escapeHtml(item.fileName.slice(0, 16)) : '下载软件'}</a>`
-                                        : `<button onclick="openModal('${escapeHtml(item.name)}', '${escapeHtml(effUrl)}'); trackHeat(${item.id}, 'open');" class="bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-100 text-xs font-bold px-5 py-2 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm active:scale-95 transition-all duration-300">在线使用</button>`}
+                                        ? `<a href="${escapeHtml(effUrl)}" onclick="return handleDownload(${item.id}, '${escapeHtml(effUrl)}')" ${effUrl !== '#' ? 'download' : ''} class="main-action inline-block bg-slate-900 dark:bg-sky-500 hover:bg-slate-800 dark:hover:bg-sky-400 text-white dark:text-slate-950 text-xs font-bold px-5 py-2 rounded-xl shadow-md active:scale-95 transition-all duration-300">${item.fileName ? '下载：' + escapeHtml(item.fileName.slice(0, 12)) : '下载软件'}</a>`
+                                        : `<button onclick="openModal('${escapeHtml(item.name)}', '${escapeHtml(effUrl)}'); trackHeat(${item.id}, 'open');" class="main-action bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-100 text-xs font-bold px-5 py-2 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm active:scale-95 transition-all duration-300">在线使用</button>`}
                                 </div>
                             </div>
                         </div>
