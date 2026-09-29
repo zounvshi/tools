@@ -266,7 +266,7 @@
             <aside id="hotSidebar" class="hidden lg:block w-full lg:w-72 shrink-0 glass-panel rounded-3xl p-5 sticky top-24 self-start order-first">
                 <div class="flex items-center gap-2 mb-4 pb-3 border-b border-slate-200/60 dark:border-slate-700/40">
                     <span class="text-xl">🔥</span>
-                    <h3 class="text-base font-black text-slate-900 dark:text-white font-mono">热门排行榜</h3>
+                    <h3 class="text-base font-black text-slate-900 dark:text-white font-mono" title="热度规则：搜索命中 +1、查看详情 +1、打开在线链接 +2、下载软件 +3、收藏 +4">热门排行榜</h3>
                 </div>
                 <div id="hotList" class="space-y-1 min-h-[120px]">
                     <div class="text-center text-xs text-slate-400 py-6 italic">加载中...</div>
@@ -906,9 +906,20 @@
             return true;
         }
 
+        // 热度埋点：search 1 分 / view 1 分 / open 2 分 / download 3 分 / favorite 4 分
         function trackHeat(id, action) {
-            if (!id || !/^(view|open|download)$/.test(action)) return;
+            if (!id || !/^(view|open|download|favorite|search)$/.test(action)) return;
             fetch('/api/heat', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id, action }), cache: 'no-store' })
+                .then(r => r.ok ? r.json() : null)
+                .then(d => { if (d && Array.isArray(d.list)) { heatData = d.list; renderHotList(); } })
+                .catch(() => {});
+        }
+
+        // 批量热度埋点（搜索命中时一次给多个结果加分）
+        function trackHeatBatch(ids, action) {
+            const list = (ids || []).map(String).filter(Boolean);
+            if (list.length === 0 || !/^(view|open|download|favorite|search)$/.test(action)) return;
+            fetch('/api/heat', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ ids: list, action }), cache: 'no-store' })
                 .then(r => r.ok ? r.json() : null)
                 .then(d => { if (d && Array.isArray(d.list)) { heatData = d.list; renderHotList(); } })
                 .catch(() => {});
@@ -1034,6 +1045,8 @@
         function toggleFavorite(id) {
             const item = toolsData.find(t => t.id === id); if (!item) return;
             item.favorite = !item.favorite; saveFavorites(); schedulePushFavorites();
+            // 只在「新增收藏」时加热度（4 分），取消收藏不重复计分，避免反复点星刷榜
+            if (item.favorite) trackHeat(id, 'favorite');
             if (isFavViewActive && !item.favorite) renderTools('favorite', searchInput.value);
             else renderTools(getActiveFilterType(), searchInput.value);
         }
@@ -1596,7 +1609,23 @@
             this.className = "filter-btn shrink-0 bg-white dark:bg-slate-800 text-slate-900 dark:text-white shadow-sm px-3 md:px-4 py-1.5 rounded-lg text-xs font-bold transition-all";
             resetPage(); renderTools(this.dataset.type, searchInput.value);
         }));
-        searchInput.addEventListener('input', function () { resetPage(); renderTools(getActiveFilterType(), this.value); });
+        // 搜索热度：输入时立即渲染；停手 700ms 后给命中的前 5 个工具各加 1 分
+        // 同一关键词只记一次，避免来回增删字符刷榜
+        let searchHeatTimer = null;
+        let lastSearchHeatKey = '';
+        const SEARCH_HEAT_TOP = 5;
+        searchInput.addEventListener('input', function () {
+            resetPage(); renderTools(getActiveFilterType(), this.value);
+            const kw = String(this.value || '').trim().toLowerCase();
+            clearTimeout(searchHeatTimer);
+            if (kw === '') { lastSearchHeatKey = ''; return; }
+            searchHeatTimer = setTimeout(function () {
+                if (kw === lastSearchHeatKey) return;
+                lastSearchHeatKey = kw;
+                const hits = getFilteredTools().slice(0, SEARCH_HEAT_TOP).map(t => t.id);
+                if (hits.length) trackHeatBatch(hits, 'search');
+            }, 700);
+        });
         modal.addEventListener('click', (e) => { if (e.target === modal) document.getElementById('close-modal').click(); });
         guideOverlay.addEventListener('click', (e) => { if (e.target === guideOverlay) closeGuideModal(); });
         aboutOverlay.addEventListener('click', (e) => { if (e.target === aboutOverlay) closeAboutModal(); });
@@ -1623,7 +1652,7 @@
         });
 
         // ============ 全局暴露 ============
-        Object.assign(window, { toggleDarkMode, handleCardMouseMove, openAboutModal, closeAboutModal, previewAbout, saveAboutContent, openGuideModal, closeGuideModal, previewGuide, saveGuideForCurrentTool, openModal, toggleModalSize, toggleFavorite, openLoginModal, closeLoginModal, setLoginMode, handleLogin, openSubmitModal, closeSubmitModal, adaptSubType, handleSubmit, openDashboard, closeDashboard, setDashTab, adminReview, deleteTool, toggleHamburger, logout, iconFallback, autoFetchIcon, onIconFileChange, openIconEditor, closeIconEditor, ieAuto, ieFileChange, ieClear, saveToolIcon, openToolEditor, closeToolEditor, saveToolEdit, renderUsersTab, loadUsers, createUser, uploadImport, confirmImport, resetUserPassword, deleteUser, openChangePasswordModal, closeChangePasswordModal, submitChangePassword, toggleUserMenu, closeUserMenus, adminPasswordTip, openMySubmissions, closeMySubmissions, loadMySubmissions, goToPage, resetPage, handleDownload, trackHeat, openHotTool, loadHotList, renderHotList });
+        Object.assign(window, { toggleDarkMode, handleCardMouseMove, openAboutModal, closeAboutModal, previewAbout, saveAboutContent, openGuideModal, closeGuideModal, previewGuide, saveGuideForCurrentTool, openModal, toggleModalSize, toggleFavorite, openLoginModal, closeLoginModal, setLoginMode, handleLogin, openSubmitModal, closeSubmitModal, adaptSubType, handleSubmit, openDashboard, closeDashboard, setDashTab, adminReview, deleteTool, toggleHamburger, logout, iconFallback, autoFetchIcon, onIconFileChange, openIconEditor, closeIconEditor, ieAuto, ieFileChange, ieClear, saveToolIcon, openToolEditor, closeToolEditor, saveToolEdit, renderUsersTab, loadUsers, createUser, uploadImport, confirmImport, resetUserPassword, deleteUser, openChangePasswordModal, closeChangePasswordModal, submitChangePassword, toggleUserMenu, closeUserMenus, adminPasswordTip, openMySubmissions, closeMySubmissions, loadMySubmissions, goToPage, resetPage, handleDownload, trackHeat, trackHeatBatch, openHotTool, loadHotList, renderHotList });
 
         // ============ 启动 ============
         initTheme();
