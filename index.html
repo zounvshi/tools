@@ -5,11 +5,36 @@
     <link rel="icon" type="image/png" href="favicon.png">
     <title>办公提效工具集成平台</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- 预注册 dark 类，避免 Tailwind Play CDN 在首次切换时重新全量编译 -->
+    <meta name="theme-class-token" content="dark" class="dark">
+    <!-- 在首屏绘制前应用主题，消除深色模式闪白 -->
+    <script>
+        (function () {
+            const root = document.documentElement;
+            let useDark = false;
+            try {
+                const saved = localStorage.getItem('theme');
+                useDark = saved === 'dark' || (!saved && window.matchMedia('(prefers-color-scheme: dark)').matches);
+            } catch (e) {
+                useDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+            }
+            root.classList.toggle('dark', useDark);
+            root.style.colorScheme = useDark ? 'dark' : 'light';
+        })();
+    </script>
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = { darkMode: 'class' }
     </script>
     <style>
+        /* ===== 主题性能 ===== */
+        html { color-scheme: light; }
+        html.dark { color-scheme: dark; }
+        /* 主题切换只在两个绘制帧内禁用过渡，保留日常按钮与卡片动效。使用 data 属性避免触发 Tailwind CDN 的 class 监听器。 */
+        html[data-theme-switching] *,
+        html[data-theme-switching] *::before,
+        html[data-theme-switching] *::after { transition: none !important; }
+
         /* ===== 滚动条 ===== */
         ::-webkit-scrollbar { width: 8px; height: 8px; }
         ::-webkit-scrollbar-track { background: transparent; }
@@ -203,11 +228,11 @@
         .dark .card-locate { outline-color: rgba(56,189,248,0.95); }
     </style>
 </head>
-<body class="bg-[#eaf4f8] dark:bg-[#0b0f19] text-slate-800 dark:text-slate-100 min-h-screen font-sans antialiased overflow-x-hidden relative text-base transition-colors duration-500">
+<body class="bg-[#eaf4f8] dark:bg-[#0b0f19] text-slate-800 dark:text-slate-100 min-h-screen font-sans antialiased overflow-x-hidden relative text-base">
 
-    <div class="fixed top-[-100px] left-[-100px] w-[700px] h-[700px] bg-sky-400/30 dark:bg-sky-600/15 rounded-full blur-[140px] pointer-events-none -z-10 transition-colors duration-500"></div>
-    <div class="fixed top-[20%] right-[-100px] w-[750px] h-[750px] bg-purple-400/25 dark:bg-purple-600/15 rounded-full blur-[150px] pointer-events-none -z-10 transition-colors duration-500"></div>
-    <div class="fixed bottom-[-100px] left-[30%] w-[650px] h-[650px] bg-indigo-400/20 dark:bg-indigo-600/10 rounded-full blur-[140px] pointer-events-none -z-10 transition-colors duration-500"></div>
+    <div class="fixed top-[-100px] left-[-100px] w-[700px] h-[700px] bg-sky-400/30 dark:bg-sky-600/15 rounded-full blur-[140px] pointer-events-none -z-10"></div>
+    <div class="fixed top-[20%] right-[-100px] w-[750px] h-[750px] bg-purple-400/25 dark:bg-purple-600/15 rounded-full blur-[150px] pointer-events-none -z-10"></div>
+    <div class="fixed bottom-[-100px] left-[30%] w-[650px] h-[650px] bg-indigo-400/20 dark:bg-indigo-600/10 rounded-full blur-[140px] pointer-events-none -z-10"></div>
 
     <!-- ===== 全局顶栏 ===== -->
     <nav class="topbar glass-panel border-x-0 border-t-0 rounded-none">
@@ -289,7 +314,7 @@
                     <svg id="favToggleIcon" class="w-3.5 h-3.5 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/></svg>
                     <span id="favToggleText">收藏</span>
                 </button>
-                <button id="themeToggleBtn" onclick="toggleDarkMode()" class="flex items-center justify-center w-9 h-9 bg-white/60 dark:bg-slate-800/60 hover:bg-white dark:hover:bg-slate-800 border border-white/80 dark:border-slate-700/60 text-slate-700 dark:text-slate-300 rounded-xl text-xs transition-all shadow-sm shrink-0" title="切换主题"><span id="themeIcon">🌙</span></button>
+                <button id="themeToggleBtn" onclick="toggleDarkMode()" class="flex items-center justify-center w-9 h-9 bg-white/60 dark:bg-slate-800/60 hover:bg-white dark:hover:bg-slate-800 border border-white/80 dark:border-slate-700/60 text-slate-700 dark:text-slate-300 rounded-xl text-xs transition-all shadow-sm shrink-0" title="切换到深色模式" aria-label="切换到深色模式" aria-pressed="false"><span id="themeIcon" aria-hidden="true">🌙</span></button>
             </div>
         </div>
     </div>
@@ -652,18 +677,56 @@
         }
 
         // ============ 主题 ============
-        function initTheme() {
-            const saved = localStorage.getItem('theme');
-            const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-            if (saved === 'dark' || (!saved && prefersDark)) {
-                document.documentElement.classList.add('dark');
-                document.getElementById('themeIcon').innerText = '☀️';
+        let themeReleaseFrame = 0;
+        let themeSaveHandle = 0;
+        let pendingTheme = '';
+
+        function syncThemeControls(isDark) {
+            const icon = document.getElementById('themeIcon');
+            const button = document.getElementById('themeToggleBtn');
+            const nextLabel = isDark ? '切换到浅色模式' : '切换到深色模式';
+            if (icon) icon.textContent = isDark ? '☀️' : '🌙';
+            if (button) {
+                button.title = nextLabel;
+                button.setAttribute('aria-label', nextLabel);
+                button.setAttribute('aria-pressed', String(isDark));
             }
         }
+
+        function initTheme() {
+            syncThemeControls(document.documentElement.classList.contains('dark'));
+        }
+
+        function scheduleThemeSave(theme) {
+            pendingTheme = theme;
+            if (themeSaveHandle) return;
+            const save = function () {
+                themeSaveHandle = 0;
+                try { localStorage.setItem('theme', pendingTheme); } catch (e) { /* 浏览器禁用存储时仅影响偏好记忆 */ }
+            };
+            if ('requestIdleCallback' in window) themeSaveHandle = requestIdleCallback(save, { timeout: 500 });
+            else themeSaveHandle = setTimeout(save, 0);
+        }
+
         function toggleDarkMode() {
-            const isDark = document.documentElement.classList.toggle('dark');
-            localStorage.setItem('theme', isDark ? 'dark' : 'light');
-            document.getElementById('themeIcon').innerText = isDark ? '☀️' : '🌙';
+            const root = document.documentElement;
+            const isDark = !root.classList.contains('dark');
+
+            // 先禁用主题相关过渡，再一次性提交状态；下一帧即可看到最终配色。
+            root.setAttribute('data-theme-switching', '');
+            root.classList.toggle('dark', isDark);
+            root.style.colorScheme = isDark ? 'dark' : 'light';
+            syncThemeControls(isDark);
+            scheduleThemeSave(isDark ? 'dark' : 'light');
+
+            // 两个绘制帧后恢复日常交互动效，避免恢复 transition 时补启动颜色动画。
+            if (themeReleaseFrame) cancelAnimationFrame(themeReleaseFrame);
+            themeReleaseFrame = requestAnimationFrame(function () {
+                themeReleaseFrame = requestAnimationFrame(function () {
+                    root.removeAttribute('data-theme-switching');
+                    themeReleaseFrame = 0;
+                });
+            });
         }
 
         // ============ 数据 ============
